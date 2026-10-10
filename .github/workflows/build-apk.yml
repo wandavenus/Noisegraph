@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: "Commit SHA from wandavenus/Dump"
+        description: "Source commit SHA to build"
         required: true
         type: string
 
@@ -134,7 +134,7 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
         run: |
           mkdir -p release
-          cp "source/build/app/outputs/flutter-apk/app-release.apk" "release/Dump-$RUN_NUMBER.apk"
+          cp "source/build/app/outputs/flutter-apk/app-release.apk" "release/Noisegraph-$RUN_NUMBER.apk"
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3
@@ -143,7 +143,7 @@ jobs:
           name: "Android Build #${{ github.run_number }}"
           draft: true
           body: |
-            Automatically built from wandavenus/Dump.
+            Automated release build for Noisegraph.
 
-            Source commit: ${{ steps.source.outputs.sha }}
-          files: release/Dump-${{ github.run_number }}.apk
+            Source revision: `${{ steps.source.outputs.sha }}`
+          files: release/Noisegraph-${{ github.run_number }}.apk
