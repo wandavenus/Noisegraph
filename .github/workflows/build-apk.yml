@@ -1,0 +1,149 @@
+name: Build Android APK
+
+on:
+  repository_dispatch:
+    types:
+      - build-private-source
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "Commit SHA from wandavenus/Dump"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk-builder
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve source commit
+        id: source
+        env:
+          EVENT_SHA: ${{ github.event.client_payload.sha }}
+          MANUAL_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          SHA="${EVENT_SHA:-$MANUAL_SHA}"
+          if [ -z "$SHA" ]; then
+            echo "::error::Source commit SHA is missing."
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout private source
+        uses: actions/checkout@v7
+        with:
+          repository: wandavenus/Dump
+          ref: ${{ steps.source.outputs.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
+          path: source
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          add-job-summary: never
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: source
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: source
+        run: flutter analyze --no-pub --no-fatal-warnings --no-fatal-infos
+
+      - name: Set Android version
+        working-directory: source
+        run: |
+          set -euo pipefail
+          VERSION_NAME=$(sed -n 's/^version: *//p' pubspec.yaml | cut -d+ -f1 | tr -d '\r')
+          VERSION_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          if [ -z "$VERSION_NAME" ]; then
+            echo "::error::Unable to read app version from pubspec.yaml"
+            exit 1
+          fi
+          sed -i "s/^version: .*/version: $VERSION_NAME/" pubspec.yaml
+          echo "flutter.versionName=$VERSION_NAME" >> android/local.properties
+          echo "flutter.versionCode=$VERSION_CODE" >> android/local.properties
+
+      - name: Configure release signing
+        working-directory: source
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ] || [ -z "$ANDROID_STORE_PASSWORD" ]; then
+            echo "::error::Release signing secrets are not configured in Noisegraph."
+            exit 1
+          fi
+
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
+          keytool -list -keystore android/app/release-keystore.jks -storetype PKCS12 -storepass "$ANDROID_STORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null
+
+          keytool -importkeystore \
+            -srckeystore android/app/release-keystore.jks \
+            -srcstoretype PKCS12 \
+            -srcstorepass "$ANDROID_STORE_PASSWORD" \
+            -srcalias "$ANDROID_KEY_ALIAS" \
+            -srckeypass "$ANDROID_KEY_PASSWORD" \
+            -destkeystore /tmp/release-key-validation.jks \
+            -deststoretype PKCS12 \
+            -deststorepass "ci-validation-only" \
+            -destkeypass "ci-validation-only" \
+            -noprompt >/dev/null 2>&1
+          rm -f /tmp/release-key-validation.jks
+
+      - name: Build release APK
+        working-directory: source
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/source/android/app/release-keystore.jks
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: >
+          flutter build apk
+          --release
+          --target-platform android-arm64
+          --no-pub
+          --obfuscate
+          --split-debug-info=build/debug-info
+
+      - name: Prepare APK
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          mkdir -p release
+          cp "source/build/app/outputs/flutter-apk/app-release.apk" "release/Dump-$RUN_NUMBER.apk"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: build-${{ github.run_id }}
+          name: "Android Build #${{ github.run_number }}"
+          draft: true
+          body: |
+            Automatically built from wandavenus/Dump.
+
+            Source commit: ${{ steps.source.outputs.sha }}
+          files: release/Dump-${{ github.run_number }}.apk
