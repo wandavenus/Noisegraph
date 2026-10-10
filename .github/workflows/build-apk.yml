@@ -136,12 +136,12 @@ jobs:
           mkdir -p release
           cp "source/build/app/outputs/flutter-apk/app-release.apk" "release/Noisegraph-$RUN_NUMBER.apk"
 
-      - name: Publish GitHub Release
+      - name: Upload APK to Public Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: build-${{ github.run_id }}
           name: "Android Build #${{ github.run_number }}"
-          draft: true
+          draft: false
           body: |
             Automated release build for Noisegraph.
 
