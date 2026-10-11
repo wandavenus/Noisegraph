@@ -136,31 +136,6 @@ jobs:
           mkdir -p release
           cp "source/build/app/outputs/flutter-apk/app-release.apk" "release/Noisegraph-$RUN_NUMBER-arm64-v8a.apk"
 
-      - name: Prepare release changelog
-        id: changelog
-        working-directory: source
-        shell: python
-        run: |
-          import os
-          import re
-          from pathlib import Path
-
-          text = Path("lib/pages/settings_page/changelog_data.dart").read_text(encoding="utf-8")
-          match = re.search(
-              r"_ChangelogEntry\(\s*version: '([^']+)',\s*date: '([^']+)',\s*changes: \[(.*?)\],\s*\),",
-              text,
-              re.S,
-          )
-          if not match:
-              raise SystemExit("Could not parse the latest app changelog entry.")
-
-          version, date, changes_block = match.groups()
-          changes = re.findall(r"'((?:\\.|[^'\\])*)'", changes_block)
-          body = f"**Version {version} · {date}**\n" + "\n".join(f"- {change}" for change in changes)
-          delimiter = "CHANGELOG_" + str(os.getpid())
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write(f"body<<{delimiter}\n{body}\n{delimiter}\n")
-
       - name: Upload APK to Public Release
         uses: softprops/action-gh-release@v3
         with:
@@ -172,7 +147,4 @@ jobs:
 
             Source revision: `${{ steps.source.outputs.sha }}`
 
-            ### Changelog
-
-            ${{ steps.changelog.outputs.body }}
           files: release/Noisegraph-${{ github.run_number }}-arm64-v8a.apk
