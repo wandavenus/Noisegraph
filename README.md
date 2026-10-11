@@ -48,10 +48,6 @@ Get the latest available Android build from **[GitHub Releases](https://github.c
 
 Only install APKs you trust. Back up anything important before installing a development build.
 
-## Changelog
-
-Release notes and the latest changes are published alongside each build on the [Releases page](https://github.com/wandavenus/Noisegraph/releases).
-
 ## Feedback
 
 Found a bug or have an idea? Open an [Issue](https://github.com/wandavenus/Noisegraph/issues) with steps to reproduce the problem and, if possible, your Android version and device model.
