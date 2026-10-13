@@ -46,25 +46,25 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Generate changelog from latest Noisegraph commit
+      - name: Generate changelog from source commit in Dump
         id: changelog
         env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.SOURCE_READ_TOKEN }}
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
         run: |
           set -euo pipefail
 
-          # Use exactly one title: the newest commit subject on the release repository's default branch.
-          latest_title="$(gh api "repos/$RELEASE_REPO/commits/main" --jq '.commit.message | split("\n")[0]')"
+          # Use the subject of the exact Dump commit being built.
+          commit_title="$(gh api "repos/wandavenus/Dump/commits/$SOURCE_SHA" --jq '.commit.message | split("\\n")[0]')"
 
-          if [ -z "$latest_title" ]; then
-            echo "::error::Unable to resolve the latest Noisegraph commit title."
+          if [ -z "$commit_title" ]; then
+            echo "::error::Unable to resolve the source commit title from wandavenus/Dump."
             exit 1
           fi
 
           {
             echo 'body<<CHANGELOG_EOF'
-            printf '%s\n' "- $latest_title"
+            printf '%s\\n' "- $commit_title"
             echo 'CHANGELOG_EOF'
           } >> "$GITHUB_OUTPUT"
 
