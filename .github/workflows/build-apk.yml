@@ -55,7 +55,7 @@ jobs:
           set -euo pipefail
 
           # Use the subject of the exact Dump commit being built.
-          commit_title="$(gh api "repos/wandavenus/Dump/commits/$SOURCE_SHA" --jq '.commit.message | split("\\n")[0]')"
+          commit_title="$(gh api "repos/wandavenus/Dump/commits/$SOURCE_SHA" --jq '.commit.message | split("\n")[0]')"
 
           if [ -z "$commit_title" ]; then
             echo "::error::Unable to resolve the source commit title from wandavenus/Dump."
