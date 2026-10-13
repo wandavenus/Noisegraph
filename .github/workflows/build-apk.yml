@@ -64,7 +64,7 @@ jobs:
 
           {
             echo 'body<<CHANGELOG_EOF'
-            printf '%s\\n' "- $commit_title"
+            printf '%s\n' "- $commit_title"
             echo 'CHANGELOG_EOF'
           } >> "$GITHUB_OUTPUT"
 
