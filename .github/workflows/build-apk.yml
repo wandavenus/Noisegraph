@@ -46,48 +46,25 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Generate changelog from previous release
+      - name: Generate changelog from latest Noisegraph commit
         id: changelog
         env:
           GH_TOKEN: ${{ github.token }}
-          SOURCE_SHA: ${{ steps.source.outputs.sha }}
           RELEASE_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
-          # Get the last published stable release. The current run's release does not exist yet.
-          release_json="$(gh api "repos/$RELEASE_REPO/releases?per_page=100")"
-          previous_revision="$(printf '%s' "$release_json" | jq -r '
-            [.[] | select(.draft == false and .prerelease == false)]
-            | sort_by(.published_at // .created_at)
-            | last
-            | .body // ""
-            | try capture("Source revision: `(?<sha>[0-9a-fA-F]{7,40})`").sha // empty
-          ')"
+          # Use exactly one title: the newest commit subject on the release repository's default branch.
+          latest_title="$(gh api "repos/$RELEASE_REPO/commits/main" --jq '.commit.message | split("\n")[0]')"
 
-          if [ -n "$previous_revision" ] && git -C source cat-file -e "$previous_revision^{commit}" 2>/dev/null; then
-            if [ "$previous_revision" = "$SOURCE_SHA" ]; then
-              commits=""
-            elif git -C source merge-base --is-ancestor "$previous_revision" "$SOURCE_SHA"; then
-              commits="$(git -C source log --reverse --format='%s' "$previous_revision..$SOURCE_SHA")"
-            else
-              echo "::error::Previous release source revision is not an ancestor of the source being built; refusing to generate an inaccurate changelog."
-              exit 1
-            fi
-          else
-            echo "::warning::Previous release has no usable Dump source revision; using the source commit's subject only."
-            commits="$(git -C source log -1 --format='%s' "$SOURCE_SHA")"
-          fi
-
-          if [ -z "$commits" ]; then
-            changelog="- No new commits since the previous release."
-          else
-            changelog="$(printf '%s\n' "$commits" | sed 's/^/- /')"
+          if [ -z "$latest_title" ]; then
+            echo "::error::Unable to resolve the latest Noisegraph commit title."
+            exit 1
           fi
 
           {
             echo 'body<<CHANGELOG_EOF'
-            printf '%s\n' "$changelog"
+            printf '%s\n' "- $latest_title"
             echo 'CHANGELOG_EOF'
           } >> "$GITHUB_OUTPUT"
 
