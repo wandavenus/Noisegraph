@@ -52,3 +52,11 @@ jobs:
       - name: Run AutoMix engine tests
         working-directory: source
         run: flutter test --no-pub test/services/automix_service/automix_engine_test.dart
+
+      - name: Run AutoMix cache tests
+        working-directory: source
+        run: flutter test --no-pub test/services/automix_service/automix_cache_test.dart
+
+      - name: Run AutoMix plan signature tests
+        working-directory: source
+        run: flutter test --no-pub test/services/automix_service/automix_plan_signature_test.dart
