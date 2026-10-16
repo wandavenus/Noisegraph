@@ -1,0 +1,63 @@
+name: Test Native AutoMix C
+
+on:
+  repository_dispatch:
+    types:
+      - test-native-c
+
+permissions:
+  contents: read
+
+concurrency:
+  group: noisegraph-test-native-c-${{ github.event.client_payload.sha }}
+  cancel-in-progress: false
+
+jobs:
+  native-c:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source commit
+        id: source
+        env:
+          SOURCE_SHA: ${{ github.event.client_payload.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
+            exit 1
+          fi
+          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Testing native DSP on Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout private Dump source
+        uses: actions/checkout@v7
+        with:
+          repository: wandavenus/Dump
+          ref: ${{ steps.source.outputs.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
+          path: source
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Compile native AutoMix tests with sanitizers
+        working-directory: source
+        run: |
+          set -euo pipefail
+          mkdir -p build/native-tests
+          cc \
+            -std=c11 -O1 -g -Wall -Wextra \
+            -fsanitize=address,undefined -fno-omit-frame-pointer \
+            -Inative_audio_runtime/src \
+            native_audio_runtime/test/automix_native_c_test.c \
+            native_audio_runtime/src/automix_analyzer.c \
+            native_audio_runtime/src/automix_planner.c \
+            native_audio_runtime/src/automix_phase_lock.c \
+            native_audio_runtime/src/automix_tone_processor.c \
+            -lm -o build/native-tests/automix_native_c_test
+
+      - name: Run native AutoMix tests
+        working-directory: source
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: build/native-tests/automix_native_c_test
