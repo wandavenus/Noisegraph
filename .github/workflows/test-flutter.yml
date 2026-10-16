@@ -1,0 +1,58 @@
+name: Test Flutter
+
+on:
+  repository_dispatch:
+    types:
+      - test-flutter
+
+permissions:
+  contents: read
+
+concurrency:
+  group: noisegraph-test-flutter-${{ github.event.client_payload.sha }}
+  cancel-in-progress: false
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source commit
+        id: source
+        env:
+          SOURCE_SHA: ${{ github.event.client_payload.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
+            exit 1
+          fi
+          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Testing Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout private Dump source
+        uses: actions/checkout@v7
+        with:
+          repository: wandavenus/Dump
+          ref: ${{ steps.source.outputs.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
+          path: source
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: source
+        run: flutter pub get
+
+      - name: Analyze Dart and Flutter code
+        working-directory: source
+        run: flutter analyze --no-pub --no-fatal-warnings --no-fatal-infos
+
+      - name: Run Flutter tests
+        working-directory: source
+        run: flutter test --no-pub
