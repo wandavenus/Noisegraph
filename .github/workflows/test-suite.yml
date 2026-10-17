@@ -147,6 +147,7 @@ jobs:
             native_audio_runtime/src/automix_analyzer.c \
             native_audio_runtime/src/automix_planner.c \
             native_audio_runtime/src/automix_phase_lock.c \
+            native_audio_runtime/src/automix_live_tracker.c \
             native_audio_runtime/src/automix_tone_processor.c \
             -lm -o build/native-tests/automix_native_c_test
 
