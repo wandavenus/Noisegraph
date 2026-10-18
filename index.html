@@ -1,74 +1,807 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#fdfcfc">
-<meta name="description" content="Noisegraph is an Android music player built around your local library, an immersive Now Playing experience, and thoughtful transitions.">
-<meta property="og:title" content="Noisegraph — A music player for your library">
-<meta property="og:description" content="Your music, your library, a better flow.">
-<title>Noisegraph — A music player for your library</title>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fdfcfc">
+    <meta name="description" content="Noisegraph is an Android music player built around your local library, an immersive Now Playing experience, and thoughtful transitions.">
+    <meta property="og:title" content="Noisegraph — A music player for your library">
+    <meta property="og:description" content="Your music, your library, a better flow.">
+    <title>Noisegraph — A music player for your library
+    </title>
+
 <style>
-:root{color-scheme:light;--paper:#fdfcfc;--soft:#f7f6f6;--card:#f1eeee;--ink:#201d1d;--strong:#090909;--body:#545050;--muted:#8a8585;--line:#e5e1e1;--line-strong:#c9c3c3;--accent:#007aff;--terminal:#0c0c0e;--terminal-panel:#161618;--max:1040px;--mono:ui-monospace,"SFMono-Regular",Menlo,Monaco,Consolas,"Liberation Mono",monospace;--font-scale:1.05}
-*,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:80px}body{margin:0;min-width:320px;background:var(--paper);color:var(--ink);font:15.75px/1.65 var(--mono);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}a{color:inherit;text-decoration:none}button{font:inherit}a,button{-webkit-tap-highlight-color:transparent}a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}::selection{background:#d9eaff;color:#111}.wrap{width:min(var(--max),calc(100% - 48px));margin-inline:auto}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(253,252,252,.96);border-bottom:1px solid var(--line)}.nav{display:flex;min-height:68px;align-items:center;justify-content:space-between;gap:24px}.brand{display:inline-flex;align-items:center;gap:10px;flex-shrink:0;font-size:17.85px;font-weight:800;letter-spacing:-.08em}.brand-mark{display:grid;width:25px;height:25px;place-items:center;border:1px solid var(--ink);font-size:14.7px;line-height:1;letter-spacing:-.1em}.nav-links{display:flex;align-items:center;gap:25px}.nav-links a,.nav-meta{color:var(--body);font-size:12.6px}.nav-links a:hover,.footer-links a:hover{text-decoration:underline;text-underline-offset:4px}.nav-right{display:flex;align-items:center;gap:10px}
-.button{display:inline-flex;min-height:40px;align-items:center;justify-content:center;gap:9px;padding:6px 14px;border:1px solid var(--ink);border-radius:4px;background:var(--paper);color:var(--ink);cursor:pointer;font-size:12.6px;font-weight:600;transition:background .15s,color .15s}.button:hover{background:var(--card)}.button-primary{background:var(--ink);color:var(--paper)}.button-primary:hover{background:#3b3636}.mobile-toggle{display:none;width:40px;height:40px;align-items:center;justify-content:center;border:1px solid var(--line-strong);border-radius:4px;background:transparent;color:var(--ink);cursor:pointer}
-.hero{padding:72px 0 55px}.announcement{display:inline-flex;align-items:center;gap:10px;margin-bottom:24px;color:var(--body);font-size:12.6px}.announcement-label{padding:1px 7px;background:var(--ink);color:var(--paper)}h1,h2,h3,p{overflow-wrap:anywhere}h1{max-width:900px;margin:0;font-size:clamp(32px,5vw,46px);font-weight:750;letter-spacing:-.09em;line-height:1.28}.hero-copy{max-width:750px;margin:17px 0 0;color:var(--body);font-size:14.7px;line-height:1.85}.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}.hero-note{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:17px;color:var(--muted);font-size:11.55px}.hero-note span+span:before{content:"/";margin-right:14px;color:var(--line-strong)}
-.release-box{max-width:720px;margin-top:35px;border:1px solid var(--line-strong);background:var(--paper)}.release-tabs{display:flex;align-items:center;gap:0;min-height:42px;padding:0 14px;border-bottom:1px solid var(--line)}.release-tab{padding:10px 13px 8px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font-size:11.55px}.release-tab.active{border-bottom-color:var(--ink);color:var(--ink)}.release-content{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px}.release-content code{font-size:12.6px;line-height:1.8;overflow-wrap:anywhere}.release-content code span{color:var(--muted)}.release-content .button{flex-shrink:0}
-.section{padding:74px 0}.section-kicker{margin:0 0 14px;color:var(--muted);font-size:11.55px;letter-spacing:.04em;text-transform:uppercase}h2{margin:0;font-size:clamp(24px,3vw,32px);font-weight:750;letter-spacing:-.075em;line-height:1.35}.section-intro{max-width:680px;margin:13px 0 0;color:var(--body);font-size:13.65px;line-height:1.9}
-
-.feature-list{margin-top:32px;border-top:1px solid var(--line)}.feature-row{display:grid;grid-template-columns:52px minmax(0,1fr) minmax(200px,.8fr);gap:20px;align-items:start;padding:22px 0;border-bottom:1px solid var(--line)}.feature-marker{color:var(--muted);font-size:12.6px}.feature-row h3{margin:0;font-size:15.75px;font-weight:700;letter-spacing:-.04em}.feature-row p{margin:0;color:var(--body);font-size:12.6px;line-height:1.8}
-.automix-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,.7fr);gap:40px;align-items:center;padding:30px;border:1px solid var(--line-strong);background:var(--soft)}.automix-panel p{max-width:570px;margin:14px 0 0;color:var(--body);font-size:13.65px;line-height:1.9}.transition-map{border:1px solid var(--line);background:var(--paper)}.transition-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:13px;font-size:11.55px}.transition-row+.transition-row{border-top:1px solid var(--line)}.track-symbol{display:grid;width:28px;height:28px;place-items:center;border:1px solid var(--line-strong);font-size:12.6px}.track-name{min-width:0;font-weight:700}.track-meta{color:var(--muted);font-size:10.5px}.transition-status{color:var(--body);font-size:10.5px;white-space:nowrap}.transition-window{padding:9px 13px;border-top:1px dashed var(--line-strong);border-bottom:1px dashed var(--line-strong);color:var(--muted);text-align:center;font-size:10.5px}
-.faq-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:65px;align-items:start}.faq-list{border-top:1px solid var(--line)}.faq-item{border-bottom:1px solid var(--line)}.faq-item summary{padding:17px 0;cursor:pointer;font-size:12.6px;font-weight:700;list-style:none}.faq-item summary::-webkit-details-marker{display:none}.faq-item summary:after{float:right;content:"+";margin-left:15px;color:var(--muted);font-size:16.8px;font-weight:400}.faq-item[open] summary:after{content:"−"}.faq-item p{margin:-2px 0 18px;color:var(--body);font-size:12.6px;line-height:1.9}
-.closing{padding:60px 0;border-top:1px solid var(--line);background:var(--soft)}.closing-inner{display:flex;align-items:center;justify-content:space-between;gap:28px}.closing p{max-width:600px;margin:10px 0 0;color:var(--body);font-size:12.6px;line-height:1.8}footer{border-top:1px solid var(--line)}.footer-inner{display:flex;min-height:78px;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:15px 24px}.footer-copy,.footer-links a{color:var(--muted);font-size:10.5px}.footer-links{display:flex;flex-wrap:wrap;gap:16px}
-@media(max-width:760px){.wrap{width:min(var(--max),calc(100% - 32px))}.nav{min-height:62px;gap:10px}.brand{font-size:15.75px}.nav-links{display:none;position:absolute;top:61px;left:0;right:0;padding:14px 16px 18px;border-bottom:1px solid var(--line);background:var(--paper)}.nav-links.is-open{display:grid;gap:0}.nav-links a{padding:12px 0;border-bottom:1px solid var(--line)}.nav-links a:last-child{border-bottom:0}.nav-right .nav-meta{display:none}.mobile-toggle{display:inline-flex}.hero{padding-top:48px}.hero-actions .button{flex:1 1 auto}.release-content{align-items:flex-start;flex-direction:column;gap:14px}.release-content .button{width:100%}.feature-row{grid-template-columns:35px minmax(0,1fr);gap:12px}.feature-row p{grid-column:2}.automix-panel,.faq-grid{grid-template-columns:1fr;gap:28px}.closing-inner{align-items:flex-start;flex-direction:column}.closing-inner .button{width:100%}.footer-inner{padding:19px 0}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
-
-:root{color-scheme:light;--paper:#fdfcfc;--soft:#f7f6f6;--card:#f1eeee;--ink:#201d1d;--strong:#090909;--body:#545050;--muted:#8a8585;--line:#e5e1e1;--line-strong:#c9c3c3}
-html[data-theme="dark"]{color-scheme:dark;--paper:#101012;--soft:#171719;--card:#222225;--ink:#f0eeee;--strong:#fff;--body:#c0bcbc;--muted:#928d8d;--line:#302e30;--line-strong:#4b4749}
-html[data-theme="dark"] .topbar{background:rgba(16,16,18,.96)}
-html[data-theme="dark"] .announcement-label,html[data-theme="dark"] .button-primary{background:#eee;color:#101012}
-html[data-theme="dark"] .button-primary:hover{background:#d4d0d0}
-html[data-theme="dark"] .nav-links{background:var(--paper)}
-.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:6px 11px;border:1px solid var(--line-strong);border-radius:4px;background:transparent;color:var(--ink);cursor:pointer;font-size:12.6px}
-.theme-toggle:hover{background:var(--soft)}
+/* 1. Theme tokens and global defaults */
+:root {
+  color-scheme: light;
+  --paper: #fdfcfc;
+  --soft: #f7f6f6;
+  --card: #f1eeee;
+  --ink: #201d1d;
+  --strong: #090909;
+  --body: #545050;
+  --muted: #8a8585;
+  --line: #e5e1e1;
+  --line-strong: #c9c3c3;
+  --accent: #007aff;
+  --terminal: #0c0c0e;
+  --terminal-panel: #161618;
+  --max: 1040px;
+  --mono: ui-monospace,"SFMono-Regular",Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  --font-scale: 1.05
+}
+*,*::before,*::after {
+  box-sizing: border-box
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15.75px/1.65 var(--mono);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility
+}
+a {
+  color: inherit;
+  text-decoration: none
+}
+button {
+  font: inherit
+}
+a,button {
+  -webkit-tap-highlight-color: transparent
+}
+a:focus-visible,button:focus-visible,summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px
+}
+::selection {
+  background: #d9eaff;
+  color: #111
+}
+.wrap {
+  width: min(var(--max),calc(100% - 48px));
+  margin-inline: auto
+}
+/* 2. Header and navigation */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(253,252,252,.96);
+  border-bottom: 1px solid var(--line)
+}
+.nav {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  font-size: 17.85px;
+  font-weight: 800;
+  letter-spacing: -.08em
+}
+.brand-mark {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid var(--ink);
+  font-size: 14.7px;
+  line-height: 1;
+  letter-spacing: -.1em
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 25px
+}
+.nav-links a,.nav-meta {
+  color: var(--body);
+  font-size: 12.6px
+}
+.nav-links a:hover,.footer-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px
+}
+.button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 6px 14px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12.6px;
+  font-weight: 600;
+  transition: background .15s,color .15s
+}
+.button:hover {
+  background: var(--card)
+}
+.button-primary {
+  background: var(--ink);
+  color: var(--paper)
+}
+.button-primary:hover {
+  background: #3b3636
+}
+.mobile-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer
+}
+/* 3. Hero and download panel */
+.hero {
+  padding: 72px 0 55px
+}
+.announcement {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  color: var(--body);
+  font-size: 12.6px
+}
+.announcement-label {
+  padding: 1px 7px;
+  background: var(--ink);
+  color: var(--paper)
+}
+h1,h2,h3,p {
+  overflow-wrap: anywhere
+}
+h1 {
+  max-width: 900px;
+  margin: 0;
+  font-size: clamp(32px,5vw,46px);
+  font-weight: 750;
+  letter-spacing: -.09em;
+  line-height: 1.28
+}
+.hero-copy {
+  max-width: 750px;
+  margin: 17px 0 0;
+  color: var(--body);
+  font-size: 14.7px;
+  line-height: 1.85
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px
+}
+.hero-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 17px;
+  color: var(--muted);
+  font-size: 11.55px
+}
+.hero-note span+span:before {
+  content: "/";
+  margin-right: 14px;
+  color: var(--line-strong)
+}
+.release-box {
+  max-width: 720px;
+  margin-top: 35px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper)
+}
+.release-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 42px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line)
+}
+.release-tab {
+  padding: 10px 13px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11.55px
+}
+.release-tab.active {
+  border-bottom-color: var(--ink);
+  color: var(--ink)
+}
+.release-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px
+}
+.release-content code {
+  font-size: 12.6px;
+  line-height: 1.8;
+  overflow-wrap: anywhere
+}
+.release-content code span {
+  color: var(--muted)
+}
+.release-content .button {
+  flex-shrink: 0
+}
+/* 4. Shared sections */
+.section {
+  padding: 74px 0
+}
+.section-kicker {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 11.55px;
+  letter-spacing: .04em;
+  text-transform: uppercase
+}
+h2 {
+  margin: 0;
+  font-size: clamp(24px,3vw,32px);
+  font-weight: 750;
+  letter-spacing: -.075em;
+  line-height: 1.35
+}
+.section-intro {
+  max-width: 680px;
+  margin: 13px 0 0;
+  color: var(--body);
+  font-size: 13.65px;
+  line-height: 1.9
+}
+/* 5. Feature list */
+.feature-list {
+  margin-top: 32px;
+  border-top: 1px solid var(--line)
+}
+.feature-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0,1fr) minmax(200px,.8fr);
+  gap: 20px;
+  align-items: start;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line)
+}
+.feature-marker {
+  color: var(--muted);
+  font-size: 12.6px
+}
+.feature-row h3 {
+  margin: 0;
+  font-size: 15.75px;
+  font-weight: 700;
+  letter-spacing: -.04em
+}
+.feature-row p {
+  margin: 0;
+  color: var(--body);
+  font-size: 12.6px;
+  line-height: 1.8
+}
+/* 6. AutoMix */
+.automix-panel {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(230px,.7fr);
+  gap: 40px;
+  align-items: center;
+  padding: 30px;
+  border: 1px solid var(--line-strong);
+  background: var(--soft)
+}
+.automix-panel p {
+  max-width: 570px;
+  margin: 14px 0 0;
+  color: var(--body);
+  font-size: 13.65px;
+  line-height: 1.9
+}
+.transition-map {
+  border: 1px solid var(--line);
+  background: var(--paper)
+}
+.transition-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0,1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 13px;
+  font-size: 11.55px
+}
+.transition-row+.transition-row {
+  border-top: 1px solid var(--line)
+}
+.track-symbol {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  font-size: 12.6px
+}
+.track-name {
+  min-width: 0;
+  font-weight: 700
+}
+.track-meta {
+  color: var(--muted);
+  font-size: 10.5px
+}
+.transition-status {
+  color: var(--body);
+  font-size: 10.5px;
+  white-space: nowrap
+}
+.transition-window {
+  padding: 9px 13px;
+  border-top: 1px dashed var(--line-strong);
+  border-bottom: 1px dashed var(--line-strong);
+  color: var(--muted);
+  text-align: center;
+  font-size: 10.5px
+}
+/* 7. FAQ */
+.faq-grid {
+  display: grid;
+  grid-template-columns: .8fr 1.2fr;
+  gap: 65px;
+  align-items: start
+}
+.faq-list {
+  border-top: 1px solid var(--line)
+}
+.faq-item {
+  border-bottom: 1px solid var(--line)
+}
+.faq-item summary {
+  padding: 17px 0;
+  cursor: pointer;
+  font-size: 12.6px;
+  font-weight: 700;
+  list-style: none
+}
+.faq-item summary::-webkit-details-marker {
+  display: none
+}
+.faq-item summary:after {
+  float: right;
+  content: "+";
+  margin-left: 15px;
+  color: var(--muted);
+  font-size: 16.8px;
+  font-weight: 400
+}
+.faq-item[open] summary:after {
+  content: "−"
+}
+.faq-item p {
+  margin: -2px 0 18px;
+  color: var(--body);
+  font-size: 12.6px;
+  line-height: 1.9
+}
+/* 8. Closing section and footer */
+.closing {
+  padding: 60px 0;
+  border-top: 1px solid var(--line);
+  background: var(--soft)
+}
+.closing-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px
+}
+.closing p {
+  max-width: 600px;
+  margin: 10px 0 0;
+  color: var(--body);
+  font-size: 12.6px;
+  line-height: 1.8
+}
+footer {
+  border-top: 1px solid var(--line)
+}
+.footer-inner {
+  display: flex;
+  min-height: 78px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px 24px
+}
+.footer-copy,.footer-links a {
+  color: var(--muted);
+  font-size: 10.5px
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px
+}
+/* 9. Mobile layout */
+@media(max-width:760px) {
+  .wrap {
+    width: min(var(--max),calc(100% - 32px))
+  }
+  .nav {
+    min-height: 62px;
+    gap: 10px
+  }
+  .brand {
+    font-size: 15.75px
+  }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 61px;
+    left: 0;
+    right: 0;
+    padding: 14px 16px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper)
+  }
+  .nav-links.is-open {
+    display: grid;
+    gap: 0
+  }
+  .nav-links a {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line)
+  }
+  .nav-links a:last-child {
+    border-bottom: 0
+  }
+  .nav-right .nav-meta {
+    display: none
+  }
+  .mobile-toggle {
+    display: inline-flex
+  }
+  .hero {
+    padding-top: 48px
+  }
+  .hero-actions .button {
+    flex: 1 1 auto
+  }
+  .release-content {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px
+  }
+  .release-content .button {
+    width: 100%
+  }
+  .feature-row {
+    grid-template-columns: 35px minmax(0,1fr);
+    gap: 12px
+  }
+  .feature-row p {
+    grid-column: 2
+  }
+  .automix-panel,.faq-grid {
+    grid-template-columns: 1fr;
+    gap: 28px
+  }
+  .closing-inner {
+    align-items: flex-start;
+    flex-direction: column
+  }
+  .closing-inner .button {
+    width: 100%
+  }
+  .footer-inner {
+    padding: 19px 0
+  }
+}
+/* 10. Accessibility preferences */
+@media(prefers-reduced-motion:reduce) {
+  html {
+    scroll-behavior: auto
+  }
+  *,*::before,*::after {
+    transition-duration: .01ms!important;
+    animation-duration: .01ms!important;
+    animation-iteration-count: 1!important
+  }
+}
+/* 11. Dark theme overrides */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #101012;
+  --soft: #171719;
+  --card: #222225;
+  --ink: #f0eeee;
+  --strong: #fff;
+  --body: #c0bcbc;
+  --muted: #928d8d;
+  --line: #302e30;
+  --line-strong: #4b4749
+}
+html[data-theme="dark"] .topbar {
+  background: rgba(16,16,18,.96)
+}
+html[data-theme="dark"] .announcement-label,html[data-theme="dark"] .button-primary {
+  background: #eee;
+  color: #101012
+}
+html[data-theme="dark"] .button-primary:hover {
+  background: #d4d0d0
+}
+html[data-theme="dark"] .nav-links {
+  background: var(--paper)
+}
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 6px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12.6px
+}
+.theme-toggle:hover {
+  background: var(--soft)
+}
 </style>
-</head>
-<body>
-<header class="topbar"><nav class="nav wrap" aria-label="Main navigation">
+  </head>
+  <body>
+    <header class="topbar">
+      <nav class="nav wrap" aria-label="Main navigation">
 <a class="brand" href="#home" aria-label="Noisegraph home"><span class="brand-mark" aria-hidden="true">N</span><span>noisegraph</span></a>
-<div class="nav-links" id="nav-links"><a href="#features">Features</a><a href="#automix">AutoMix</a><a href="#faq">FAQ</a><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub ↗</a></div>
-<div class="nav-right"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button><span class="nav-meta">Android / ARM64</span><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Get the app ↗</a><button class="mobile-toggle" id="mobile-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span aria-hidden="true">☰</span></button></div>
-</nav></header>
-<main id="home">
-<section class="hero wrap">
-<div class="announcement"><span class="announcement-label">Open development</span><span>Android music player / Built around your library</span></div>
-<h1>Your music.<br>A little more in flow.</h1>
-<p class="hero-copy">Noisegraph is a music player for the collection already on your device. A focused listening experience, expressive artwork, and thoughtful transitions—without getting between you and the music.</p>
-<div class="hero-actions"><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Download latest APK ↗</a><a class="button" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">Explore the source ↗</a></div>
-<div class="hero-note"><span>Android</span><span>ARM64 / arm64-v8a</span><span>Open source development</span></div>
-<div class="release-box" aria-label="Latest APK download information"><div class="release-tabs" aria-hidden="true"><span class="release-tab active">Android APK</span><span class="release-tab">GitHub Releases</span><span class="release-tab">ARM64</span></div><div class="release-content"><code><span>$</span> Download the latest available Noisegraph build<br><span>→ Check release notes for changes and compatibility</span></code><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">View releases ↗</a></div></div>
-</section>
+        <div class="nav-links" id="nav-links"><a href="#features">Features</a><a href="#automix">AutoMix</a><a href="#faq">FAQ</a><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub ↗</a>
+        </div>
+        <div class="nav-right"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button><span class="nav-meta">Android / ARM64</span><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Get the app ↗</a><button class="mobile-toggle" id="mobile-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span aria-hidden="true">☰</span></button>
+        </div>
+      </nav>
+    </header>
+    <main id="home">
+      <section class="hero wrap">
+        <div class="announcement"><span class="announcement-label">Open development</span><span>Android music player / Built around your library</span>
+        </div>
+        <h1>Your music.<br>A little more in flow.
+        </h1>
+        <p class="hero-copy">Noisegraph is a music player for the collection already on your device. A focused listening experience, expressive artwork, and thoughtful transitions—without getting between you and the music.
+        </p>
+        <div class="hero-actions"><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Download latest APK ↗</a><a class="button" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">Explore the source ↗</a>
+        </div>
+        <div class="hero-note"><span>Android</span><span>ARM64 / arm64-v8a</span><span>Open source development</span>
+        </div>
+        <div class="release-box" aria-label="Latest APK download information">
+          <div class="release-tabs" aria-hidden="true"><span class="release-tab active">Android APK</span><span class="release-tab">GitHub Releases</span><span class="release-tab">ARM64</span>
+          </div>
+          <div class="release-content"><code><span>$</span> Download the latest available Noisegraph build<br><span>→ Check release notes for changes and compatibility</span></code><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">View releases ↗</a>
+          </div>
+        </div>
+      </section>
+      <section class="section wrap" id="features">
+        <p class="section-kicker">02 / What it's about
+        </p>
+        <h2>Less noise. More listening.
+        </h2>
+        <p class="section-intro">Built for people who keep their music close and care about how one song gives way to the next.
+        </p>
+        <div class="feature-list">
+          <article class="feature-row"><span class="feature-marker">[01]</span>
+            <h3>Your local collection
+            </h3>
+            <p>Start with the audio already on your Android device, with an experience centered on your own music.
+            </p>
+          </article>
+          <article class="feature-row"><span class="feature-marker">[02]</span>
+            <h3>A focused Now Playing
+            </h3>
+            <p>Expressive artwork and essential playback controls, with a visual system designed to keep attention on the track.
+            </p>
+          </article>
+          <article class="feature-row"><span class="feature-marker">[03]</span>
+            <h3>Playback that keeps moving
+            </h3>
+            <p>Thoughtful playback tools and ongoing work on transitions help make a listening session feel more continuous.
+            </p>
+          </article>
+          <article class="feature-row"><span class="feature-marker">[04]</span>
+            <h3>Open development
+            </h3>
+            <p>Follow progress, review changes, and report reproducible issues directly in the project repository.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="section wrap" id="automix">
+        <div class="automix-panel">
+          <div>
+            <p class="section-kicker">03 / AutoMix
+            </p>
+            <h2>One track ends.<br>The flow carries on.
+            </h2>
+            <p>AutoMix explores transition-focused playback, coordinating the handoff between the track you're listening to and the one that's up next. The feature set continues to evolve with development.
+            </p>
+            <div class="hero-actions"><a class="button" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">Follow development ↗</a>
+            </div>
+          </div>
+          <div class="transition-map" aria-label="Illustrative transition between tracks">
+            <div class="transition-row"><span class="track-symbol">A</span><span><span class="track-name">Soft Horizon</span><br><span class="track-meta">Current track</span></span><span class="transition-status">−0:42</span>
+            </div>
+            <div class="transition-window">──── transition window ────
+            </div>
+            <div class="transition-row"><span class="track-symbol">B</span><span><span class="track-name">Green Light, Slow</span><br><span class="track-meta">Up next</span></span><span class="transition-status">+0:00</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section wrap" id="faq">
+        <div class="faq-grid">
+          <div>
+            <p class="section-kicker">04 / Good to know
+            </p>
+            <h2>Before you press play.
+            </h2>
+            <p class="section-intro">A few details about the project and current builds.
+            </p>
+          </div>
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary>What is Noisegraph?
+              </summary>
+              <p>Noisegraph is an Android music player project focused on local playback, a modern Now Playing experience, and playback transitions.
+              </p>
+            </details>
+            <details class="faq-item">
+              <summary>How do I download it?
+              </summary>
+              <p>Open the latest GitHub Release, download the APK asset, and install it on your Android device. Read the release notes before installing.
+              </p>
+            </details>
+            <details class="faq-item">
+              <summary>Which devices are supported?
+              </summary>
+              <p>The published build targets Android on ARM64 (arm64-v8a). Compatibility can vary by release, so check the notes for the build you download.
+              </p>
+            </details>
+            <details class="faq-item">
+              <summary>Is Noisegraph still in development?
+              </summary>
+              <p>Yes. Features may change between builds. Follow the repository for updates and use GitHub Issues to report bugs or suggest improvements.
+              </p>
+            </details>
+            <details class="faq-item">
+              <summary>Where can I report a problem?
+              </summary>
+              <p>Open a GitHub Issue with reproduction steps, your Android version, device model, and relevant logs or screenshots.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+      <section class="closing">
+        <div class="closing-inner wrap">
+          <div>
+            <p class="section-kicker">Ready when you are
+            </p>
+            <h2>Your music, in your own hands.
+            </h2>
+            <p>Get the latest available build or explore the code and help shape what comes next.
+            </p>
+          </div>
+<a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Get the latest APK ↗</a>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="footer-inner wrap"><a class="brand" href="#home"><span class="brand-mark" aria-hidden="true">N</span><span>noisegraph</span></a><span class="footer-copy">© <span id="year">2026</span> Noisegraph / Made for your library.</span>
+        <div class="footer-links"><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/wandavenus/Noisegraph/releases" target="_blank" rel="noreferrer">Releases</a><a href="https://github.com/wandavenus/Noisegraph/issues" target="_blank" rel="noreferrer">Support</a>
+        </div>
+      </div>
+    </footer>
 
-<section class="section wrap" id="features"><p class="section-kicker">02 / What it's about</p><h2>Less noise. More listening.</h2><p class="section-intro">Built for people who keep their music close and care about how one song gives way to the next.</p><div class="feature-list">
-<article class="feature-row"><span class="feature-marker">[01]</span><h3>Your local collection</h3><p>Start with the audio already on your Android device, with an experience centered on your own music.</p></article>
-<article class="feature-row"><span class="feature-marker">[02]</span><h3>A focused Now Playing</h3><p>Expressive artwork and essential playback controls, with a visual system designed to keep attention on the track.</p></article>
-<article class="feature-row"><span class="feature-marker">[03]</span><h3>Playback that keeps moving</h3><p>Thoughtful playback tools and ongoing work on transitions help make a listening session feel more continuous.</p></article>
-<article class="feature-row"><span class="feature-marker">[04]</span><h3>Open development</h3><p>Follow progress, review changes, and report reproducible issues directly in the project repository.</p></article>
-</div></section>
-<section class="section wrap" id="automix"><div class="automix-panel"><div><p class="section-kicker">03 / AutoMix</p><h2>One track ends.<br>The flow carries on.</h2><p>AutoMix explores transition-focused playback, coordinating the handoff between the track you're listening to and the one that's up next. The feature set continues to evolve with development.</p><div class="hero-actions"><a class="button" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">Follow development ↗</a></div></div><div class="transition-map" aria-label="Illustrative transition between tracks"><div class="transition-row"><span class="track-symbol">A</span><span><span class="track-name">Soft Horizon</span><br><span class="track-meta">Current track</span></span><span class="transition-status">−0:42</span></div><div class="transition-window">──── transition window ────</div><div class="transition-row"><span class="track-symbol">B</span><span><span class="track-name">Green Light, Slow</span><br><span class="track-meta">Up next</span></span><span class="transition-status">+0:00</span></div></div></div></section>
-<section class="section wrap" id="faq"><div class="faq-grid"><div><p class="section-kicker">04 / Good to know</p><h2>Before you press play.</h2><p class="section-intro">A few details about the project and current builds.</p></div><div class="faq-list">
-<details class="faq-item"><summary>What is Noisegraph?</summary><p>Noisegraph is an Android music player project focused on local playback, a modern Now Playing experience, and playback transitions.</p></details>
-<details class="faq-item"><summary>How do I download it?</summary><p>Open the latest GitHub Release, download the APK asset, and install it on your Android device. Read the release notes before installing.</p></details>
-<details class="faq-item"><summary>Which devices are supported?</summary><p>The published build targets Android on ARM64 (arm64-v8a). Compatibility can vary by release, so check the notes for the build you download.</p></details>
-<details class="faq-item"><summary>Is Noisegraph still in development?</summary><p>Yes. Features may change between builds. Follow the repository for updates and use GitHub Issues to report bugs or suggest improvements.</p></details>
-<details class="faq-item"><summary>Where can I report a problem?</summary><p>Open a GitHub Issue with reproduction steps, your Android version, device model, and relevant logs or screenshots.</p></details>
-</div></div></section>
-<section class="closing"><div class="closing-inner wrap"><div><p class="section-kicker">Ready when you are</p><h2>Your music, in your own hands.</h2><p>Get the latest available build or explore the code and help shape what comes next.</p></div><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Get the latest APK ↗</a></div></section>
-</main>
-<footer><div class="footer-inner wrap"><a class="brand" href="#home"><span class="brand-mark" aria-hidden="true">N</span><span>noisegraph</span></a><span class="footer-copy">© <span id="year">2026</span> Noisegraph / Made for your library.</span><div class="footer-links"><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/wandavenus/Noisegraph/releases" target="_blank" rel="noreferrer">Releases</a><a href="https://github.com/wandavenus/Noisegraph/issues" target="_blank" rel="noreferrer">Support</a></div></div></footer>
 <script>
-(function(){const root=document.documentElement,themeToggle=document.getElementById('theme-toggle'),themeIcon=document.getElementById('theme-icon'),themeLabel=document.getElementById('theme-label');function setTheme(theme){root.dataset.theme=theme;const dark=theme==='dark';if(themeIcon)themeIcon.textContent=dark?'☼':'◐';if(themeLabel)themeLabel.textContent=dark?'Light':'Dark';if(themeToggle)themeToggle.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode')}if(themeToggle){let initial='light';try{initial=localStorage.getItem('noisegraph-theme')||'light'}catch(e){}setTheme(initial);themeToggle.addEventListener('click',function(){const next=root.dataset.theme==='dark'?'light':'dark';setTheme(next);try{localStorage.setItem('noisegraph-theme',next)}catch(e){}})}const toggle=document.getElementById('mobile-toggle'),links=document.getElementById('nav-links');if(toggle&&links){toggle.addEventListener('click',function(){const open=links.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close navigation':'Open navigation');toggle.querySelector('span').textContent=open?'×':'☰'});links.querySelectorAll('a').forEach(function(link){link.addEventListener('click',function(){links.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open navigation');toggle.querySelector('span').textContent='☰'})})}const year=document.getElementById('year');if(year)year.textContent=String(new Date().getFullYear())}());
+(function () {
+  const root = document.documentElement;
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeIcon = document.getElementById("theme-icon");
+  const themeLabel = document.getElementById("theme-label");
+
+  function setTheme(theme) {
+    root.dataset.theme = theme;
+    const isDark = theme === "dark";
+
+    if (themeIcon) themeIcon.textContent = isDark ? "☼" : "◐";
+    if (themeLabel) themeLabel.textContent = isDark ? "Light" : "Dark";
+
+    if (themeToggle) {
+      themeToggle.setAttribute(
+        "aria-label",
+        isDark ? "Switch to light mode" : "Switch to dark mode"
+      );
+    }
+  }
+
+  if (themeToggle) {
+    let initialTheme = "light";
+
+    try {
+      initialTheme = localStorage.getItem("noisegraph-theme") || "light";
+    } catch (error) {
+      // Theme switching still works when storage is unavailable.
+    }
+
+    setTheme(initialTheme);
+    themeToggle.addEventListener("click", function () {
+      const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
+      setTheme(nextTheme);
+
+      try {
+        localStorage.setItem("noisegraph-theme", nextTheme);
+      } catch (error) {
+        // Keep the current theme for this page view.
+      }
+    });
+  }
+
+  const menuToggle = document.getElementById("mobile-toggle");
+  const navLinks = document.getElementById("nav-links");
+
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener("click", function () {
+      const isOpen = navLinks.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+      menuToggle.setAttribute(
+        "aria-label",
+        isOpen ? "Close navigation" : "Open navigation"
+      );
+      menuToggle.querySelector("span").textContent = isOpen ? "×" : "☰";
+    });
+
+    navLinks.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        navLinks.classList.remove("is-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Open navigation");
+        menuToggle.querySelector("span").textContent = "☰";
+      });
+    });
+  }
+
+  const year = document.getElementById("year");
+  if (year) year.textContent = String(new Date().getFullYear());
+})();
 </script>
-</body>
+  </body>
 </html>
