@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09090d">
+  <meta name="description" content="Noisegraph is a modern Android music player built around your local library, an immersive Now Playing experience, and smoother transitions between tracks.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Noisegraph — Let your music take shape">
+  <meta property="og:description" content="A music player built for the way you listen.">
+  <title>Noisegraph — Let your music take shape</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09090d;
+      --panel: #111117;
+      --panel-soft: rgba(255,255,255,.045);
+      --text: #f7f7fb;
+      --muted: #aaa9b9;
+      --subtle: #777789;
+      --line: rgba(255,255,255,.105);
+      --mint: #a8ffd8;
+      --cyan: #7ad8d4;
+      --violet: #a99aff;
+      --pink: #ffadba;
+      --max: 1160px;
+      --radius-lg: 28px;
+      --ease: cubic-bezier(.2,.75,.25,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(ellipse at 76% 7%, rgba(116, 85, 205, .15), transparent 31rem),
+        radial-gradient(ellipse at 3% 37%, rgba(36, 154, 142, .08), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      pointer-events: none;
+      opacity: .18;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.17'/%3E%3C/svg%3E");
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 4px;
+    }
+    ::selection { background: rgba(168,255,216,.25); color: #fff; }
+    .wrap { width: min(var(--max), calc(100% - 48px)); margin-inline: auto; }
+    .section { padding: 112px 0; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--mint);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .19em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      width: 20px; height: 1px;
+      background: currentColor;
+      content: "";
+    }
+    .section-heading {
+      max-width: 660px;
+      margin: 18px 0 0;
+      font-size: clamp(34px, 5vw, 58px);
+      font-weight: 630;
+      letter-spacing: -.055em;
+      line-height: 1.04;
+    }
+    .section-copy {
+      max-width: 550px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    .gradient-text {
+      color: transparent;
+      background: linear-gradient(105deg, #effff8 4%, #a8ffd8 44%, #b8adff 95%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(255,255,255,.065);
+      background: rgba(9,9,13,.74);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+    .nav {
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      flex-shrink: 0;
+      font-size: 16px;
+      font-weight: 730;
+      letter-spacing: -.035em;
+    }
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(168,255,216,.3);
+      border-radius: 11px;
+      background: linear-gradient(145deg, rgba(168,255,216,.13), rgba(169,154,255,.11));
+      box-shadow: inset 0 1px rgba(255,255,255,.1), 0 0 28px rgba(168,255,216,.06);
+    }
+    .brand-mark svg { width: 22px; height: 22px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      color: #b8b8c6;
+      font-size: 13px;
+      transition: color .2s ease;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 11px 15px;
+      border: 1px solid rgba(168,255,216,.24);
+      border-radius: 12px;
+      background: rgba(168,255,216,.09);
+      color: var(--mint);
+      font-size: 12px;
+      font-weight: 700;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .nav-download:hover { background: rgba(168,255,216,.16); transform: translateY(-1px); }
+    .mobile-toggle {
+      display: none;
+      width: 42px; height: 42px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .hero { position: relative; padding: 84px 0 78px; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(370px, .98fr);
+      align-items: center;
+      gap: 50px;
+    }
+    .hero-copy { position: relative; z-index: 2; padding: 12px 0 24px; }
+    .release-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 999px;
+      background: rgba(255,255,255,.035);
+      color: #d4d3df;
+      font-size: 11px;
+      letter-spacing: .025em;
+    }
+    .status-dot {
+      position: relative;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 14px rgba(168,255,216,.65);
+    }
+    .hero h1 {
+      max-width: 620px;
+      margin: 26px 0 0;
+      font-size: clamp(48px, 6.6vw, 82px);
+      font-weight: 650;
+      letter-spacing: -.075em;
+      line-height: .99;
+    }
+    .hero h1 .second-line { display: block; margin-top: 8px; }
+    .hero-copy > p {
+      max-width: 500px;
+      margin: 24px 0 0;
+      color: #b0afbe;
+      font-size: 16px;
+      line-height: 1.85;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      padding: 0 18px;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 750;
+      transition: transform .22s var(--ease), background .22s ease, border-color .22s ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary {
+      background: var(--mint);
+      color: #0b1713;
+      box-shadow: 0 8px 34px rgba(168,255,216,.12);
+    }
+    .button-primary:hover { background: #c3ffe5; }
+    .button-secondary {
+      border-color: rgba(255,255,255,.13);
+      background: rgba(255,255,255,.035);
+      color: #f2f0f8;
+    }
+    .button-secondary:hover { border-color: rgba(255,255,255,.26); background: rgba(255,255,255,.07); }
+    .hero-note {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 22px;
+      color: var(--subtle);
+      font-size: 11px;
+    }
+    .hero-note svg { color: var(--mint); flex: 0 0 auto; }
+    .hero-visual {
+      position: relative;
+      display: grid;
+      min-height: 540px;
+      place-items: center;
+      isolation: isolate;
+    }
+    .visual-orb {
+      position: absolute;
+      z-index: -1;
+      width: min(470px, 100%);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(144,108,255,.19), rgba(67,203,173,.06) 44%, transparent 69%);
+      filter: blur(12px);
+      animation: orb-breathe 7s ease-in-out infinite alternate;
+    }
+    .orbit {
+      position: absolute;
+      width: 410px;
+      height: 410px;
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 50%;
+      transform: rotate(-22deg) scaleY(.48);
+    }
+    .orbit.orbit-two { width: 470px; height: 470px; transform: rotate(34deg) scaleY(.45); border-color: rgba(168,255,216,.08); }
+    .phone {
+      position: relative;
+      z-index: 2;
+      width: 282px;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.19);
+      border-radius: 38px;
+      background: linear-gradient(145deg, #292832, #101015 48%, #22212b);
+      box-shadow: 0 45px 110px rgba(0,0,0,.55), 0 0 0 5px rgba(255,255,255,.018), inset 0 1px 1px rgba(255,255,255,.15);
+      transform: rotate(3deg);
+      animation: phone-float 6.5s ease-in-out infinite;
+    }
+    .phone-screen {
+      overflow: hidden;
+      min-height: 490px;
+      padding: 20px 16px 17px;
+      border: 1px solid rgba(255,255,255,.04);
+      border-radius: 29px;
+      background:
+        radial-gradient(ellipse at 50% 10%, rgba(130,94,176,.19), transparent 45%),
+        linear-gradient(160deg, #18171f, #101015 70%);
+    }
+    .phone-status { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; color: #d5d4df; font-size: 9px; font-weight: 720; }
+    .phone-status-icons { display: flex; align-items: center; gap: 4px; }
+    .phone-topline { display: flex; align-items: center; justify-content: space-between; margin: 23px 0 16px; }
+    .phone-topline span { color: #9998a8; font-size: 9px; font-weight: 750; letter-spacing: .15em; }
+    .tiny-dots { display: flex; gap: 3px; }
+    .tiny-dots i { display: block; width: 3px; height: 3px; border-radius: 50%; background: #878697; }
+    .album-art {
+      position: relative;
+      display: grid;
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      place-items: center;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 66% 31%, rgba(255,232,211,.96) 0 4%, transparent 4.5%),
+        radial-gradient(ellipse at 54% 47%, rgba(251,167,156,.9) 0 12%, transparent 12.5%),
+        radial-gradient(ellipse at 40% 58%, rgba(92,49,126,.95) 0 21%, transparent 21.5%),
+        radial-gradient(ellipse at 63% 61%, rgba(255,176,143,.85) 0 28%, transparent 28.5%),
+        linear-gradient(140deg, #29204e 5%, #9360a7 42%, #df8d9c 68%, #f2c2a0);
+      box-shadow: inset 0 1px rgba(255,255,255,.25), 0 12px 30px rgba(0,0,0,.2);
+    }
+    .album-art::before {
+      position: absolute;
+      width: 75%;
+      height: 75%;
+      border: 1px solid rgba(255,255,255,.44);
+      border-radius: 50%;
+      content: "";
+      transform: translate(10%, -12%);
+      box-shadow: 0 0 0 15px rgba(255,255,255,.05), 0 0 0 31px rgba(255,255,255,.035);
+    }
+    .album-art::after {
+      position: absolute;
+      width: 43%;
+      height: 120%;
+      border: 1px solid rgba(255,255,255,.23);
+      border-radius: 50%;
+      content: "";
+      transform: rotate(34deg);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+    }
+    .art-label {
+      position: absolute;
+      right: 13px;
+      bottom: 13px;
+      z-index: 1;
+      color: rgba(255,255,255,.85);
+      font-size: 7px;
+      font-weight: 800;
+      letter-spacing: .25em;
+    }
+    .track-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 19px; }
+    .track-title { margin: 0; color: #f8f6fc; font-size: 17px; font-weight: 680; letter-spacing: -.04em; }
+    .track-artist { margin-top: 4px; color: #aaa8b8; font-size: 10px; }
+    .heart { display: grid; width: 31px; height: 31px; place-items: center; color: #c3ffdf; }
+    .scrub { margin-top: 19px; }
+    .scrub-line { height: 3px; overflow: hidden; border-radius: 8px; background: rgba(255,255,255,.13); }
+    .scrub-fill { width: 43%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--mint), #c3b5ff); }
+    .scrub-time { display: flex; justify-content: space-between; margin-top: 6px; color: #777688; font-size: 8px; }
+    .player-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding: 0 8px; color: #e1deec; }
+    .player-controls button { display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+    .player-controls .play-button {
+      width: 47px; height: 47px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d5ffeb, #9be2d3);
+      color: #0b1713;
+      box-shadow: 0 5px 18px rgba(168,255,216,.13);
+    }
+    .player-controls .play-button svg { width: 19px; height: 19px; }
+    .pause-icon { display: none; }
+    .play-button[aria-pressed="true"] .play-icon { display: none; }
+    .play-button[aria-pressed="true"] .pause-icon { display: block; }
+    .waveform { display: flex; height: 20px; align-items: center; justify-content: center; gap: 3px; margin-top: 15px; }
+    .waveform span { display: block; width: 2px; height: 25%; border-radius: 8px; background: rgba(168,255,216,.67); }
+    .waveform span:nth-child(3n) { height: 65%; }
+    .waveform span:nth-child(4n) { height: 42%; }
+    .waveform span:nth-child(5n) { height: 90%; }
+    .phone.is-playing .waveform span { animation: wave .78s ease-in-out infinite alternate; }
+    .phone.is-playing .waveform span:nth-child(2n) { animation-delay: -.35s; }
+    .phone.is-playing .waveform span:nth-child(3n) { animation-delay: -.55s; }
+    .phone.is-playing .waveform span:nth-child(4n) { animation-delay: -.18s; }
+    .phone-bottom-label { margin-top: 7px; color: #6f6e80; font-size: 8px; letter-spacing: .13em; text-align: center; text-transform: uppercase; }
+    .float-card {
+      position: absolute;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 17px;
+      background: rgba(24,23,33,.82);
+      box-shadow: 0 18px 42px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.06);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .float-card.mix { top: 100px; right: -4px; animation: card-float 5.5s ease-in-out infinite; }
+    .float-card.library { bottom: 73px; left: -12px; animation: card-float 6.5s ease-in-out infinite reverse; }
+    .float-icon { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 11px; background: rgba(168,255,216,.1); color: var(--mint); }
+    .float-icon.violet { background: rgba(169,154,255,.12); color: #c6bbff; }
+    .float-title { color: #f5f4fa; font-size: 11px; font-weight: 760; }
+    .float-subtitle { margin-top: 2px; color: #9291a2; font-size: 9px; }
+
+    .trust-strip { border-block: 1px solid rgba(255,255,255,.075); background: rgba(255,255,255,.018); }
+    .trust-items { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .trust-item { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 92px; padding: 18px; }
+    .trust-item + .trust-item { border-left: 1px solid rgba(255,255,255,.075); }
+    .trust-icon { color: #c4baff; }
+    .trust-item strong { display: block; font-size: 12px; font-weight: 720; }
+    .trust-item span { display: block; margin-top: 3px; color: #858496; font-size: 10px; }
+
+    .features { padding-top: 122px; }
+    .section-head-row { display: flex; align-items: end; justify-content: space-between; gap: 32px; }
+    .section-head-row .section-copy { max-width: 360px; margin-bottom: 4px; font-size: 14px; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+    .feature-card {
+      position: relative;
+      min-height: 300px;
+      overflow: hidden;
+      padding: 26px;
+      border: 1px solid rgba(255,255,255,.085);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(255,255,255,.048), rgba(255,255,255,.016));
+      transition: border-color .25s ease, transform .25s var(--ease), background .25s ease;
+    }
+    .feature-card:hover { transform: translateY(-4px); border-color: rgba(168,255,216,.21); background: linear-gradient(145deg, rgba(168,255,216,.065), rgba(255,255,255,.018)); }
+    .feature-number { color: #777687; font-size: 10px; letter-spacing: .12em; }
+    .feature-icon {
+      display: grid;
+      width: 48px; height: 48px;
+      margin-top: 34px;
+      place-items: center;
+      border: 1px solid rgba(168,255,216,.16);
+      border-radius: 15px;
+      background: rgba(168,255,216,.075);
+      color: var(--mint);
+    }
+    .feature-card:nth-child(2) .feature-icon { border-color: rgba(169,154,255,.18); background: rgba(169,154,255,.08); color: #c4baff; }
+    .feature-card:nth-child(3) .feature-icon { border-color: rgba(255,173,186,.18); background: rgba(255,173,186,.075); color: #ffbdc7; }
+    .feature-card h3 { margin: 22px 0 0; font-size: 19px; font-weight: 630; letter-spacing: -.035em; }
+    .feature-card p { max-width: 290px; margin: 10px 0 0; color: #9e9dad; font-size: 13px; line-height: 1.8; }
+    .feature-card .card-glow { position: absolute; right: -46px; bottom: -70px; width: 170px; height: 170px; border-radius: 50%; background: rgba(135,105,229,.07); filter: blur(15px); pointer-events: none; }
+
+    .flow-section { padding-top: 65px; }
+    .flow-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr .86fr;
+      align-items: center;
+      gap: 50px;
+      overflow: hidden;
+      padding: 58px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 30px;
+      background:
+        radial-gradient(ellipse at 85% 10%, rgba(134,111,228,.16), transparent 38%),
+        linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+    }
+    .flow-panel::after {
+      position: absolute;
+      right: -130px;
+      bottom: -270px;
+      width: 500px; height: 500px;
+      border: 1px solid rgba(168,255,216,.09);
+      border-radius: 50%;
+      box-shadow: 0 0 0 55px rgba(168,255,216,.018), 0 0 0 110px rgba(168,255,216,.012);
+      content: "";
+      pointer-events: none;
+    }
+    .flow-panel h2 { max-width: 500px; margin: 18px 0 0; font-size: clamp(34px, 4vw, 48px); font-weight: 630; letter-spacing: -.055em; line-height: 1.08; }
+    .flow-panel p { max-width: 440px; margin: 17px 0 0; color: #aaa9b8; font-size: 14px; line-height: 1.85; }
+    .flow-demo { position: relative; z-index: 1; padding: 25px 24px; border: 1px solid rgba(255,255,255,.11); border-radius: 22px; background: rgba(10,10,15,.58); box-shadow: 0 18px 65px rgba(0,0,0,.23); }
+    .flow-demo-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .flow-demo-head strong { font-size: 12px; }
+    .live-label { display: inline-flex; align-items: center; gap: 7px; color: var(--mint); font-size: 9px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+    .mix-track { display: flex; align-items: center; gap: 12px; margin-top: 21px; }
+    .mix-cover { width: 43px; height: 43px; flex: 0 0 auto; border-radius: 11px; background: radial-gradient(circle at 65% 35%, #ffd3b3 0 9%, transparent 10%), linear-gradient(135deg, #594486, #df8d9c 62%, #f4cba2); }
+    .mix-cover.second { background: radial-gradient(circle at 35% 25%, #ffe9b8 0 7%, transparent 8%), linear-gradient(135deg, #174e5b, #61a99a 50%, #d4d49b); }
+    .mix-song { min-width: 0; flex: 1; }
+    .mix-song strong { display: block; overflow: hidden; color: #ecebf3; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .mix-song span { display: block; margin-top: 3px; color: #868597; font-size: 9px; }
+    .mix-time { color: #9897a7; font-size: 9px; white-space: nowrap; }
+    .mix-connector { display: flex; align-items: center; gap: 10px; margin: 17px 0 17px 20px; color: #9d9bab; font-size: 9px; }
+    .mix-connector::before { width: 1px; height: 17px; background: linear-gradient(var(--mint), var(--violet)); content: ""; }
+    .mix-connector span { padding: 5px 8px; border: 1px solid rgba(168,255,216,.16); border-radius: 7px; background: rgba(168,255,216,.055); color: var(--mint); }
+    .mini-wave { display: flex; height: 26px; align-items: center; gap: 3px; margin-top: 24px; }
+    .mini-wave i { display: block; height: var(--h); min-width: 2px; flex: 1; border-radius: 4px; background: linear-gradient(180deg, rgba(168,255,216,.85), rgba(169,154,255,.48)); opacity: .8; }
+
+    .faq { padding-top: 115px; }
+    .faq-grid { display: grid; grid-template-columns: .72fr 1fr; gap: 90px; }
+    .faq-list { border-top: 1px solid var(--line); }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-item summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 0;
+      color: #edecf4;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 620;
+      list-style: none;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: "+"; color: var(--mint); font-size: 21px; font-weight: 400; transition: transform .2s ease; }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item p { max-width: 560px; margin: -3px 32px 22px 0; color: #9d9cac; font-size: 13px; line-height: 1.85; }
+
+    .download-section { padding: 65px 0 100px; }
+    .download-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 72px 28px;
+      border: 1px solid rgba(168,255,216,.17);
+      border-radius: 30px;
+      background:
+        radial-gradient(ellipse at 50% 115%, rgba(93,189,162,.18), transparent 49%),
+        radial-gradient(ellipse at 80% -20%, rgba(139,115,224,.17), transparent 48%),
+        linear-gradient(145deg, #13141a, #101015);
+      text-align: center;
+    }
+    .download-panel::before, .download-panel::after {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 490px;
+      height: 490px;
+      border: 1px solid rgba(255,255,255,.045);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+    .download-panel::after { width: 620px; height: 620px; border-color: rgba(168,255,216,.045); }
+    .download-panel > * { position: relative; z-index: 1; }
+    .download-panel .section-heading { max-width: 700px; margin-inline: auto; }
+    .download-panel .section-copy { max-width: 520px; margin: 18px auto 0; }
+    .download-panel .hero-actions { justify-content: center; margin-top: 27px; }
+    .download-footnote { margin-top: 17px; color: #777788; font-size: 10px; }
+
+    footer { border-top: 1px solid rgba(255,255,255,.07); }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 28px; min-height: 92px; }
+    .footer-copy { color: #777687; font-size: 11px; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 23px; }
+    .footer-links a { color: #aaa9b8; font-size: 11px; transition: color .2s ease; }
+    .footer-links a:hover { color: var(--mint); }
+
+    @keyframes phone-float { 0%, 100% { transform: translateY(0) rotate(3deg); } 50% { transform: translateY(-10px) rotate(1.5deg); } }
+    @keyframes card-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes orb-breathe { from { opacity: .65; transform: scale(.94); } to { opacity: 1; transform: scale(1.06); } }
+    @keyframes wave { from { transform: scaleY(.35); opacity: .55; } to { transform: scaleY(1); opacity: 1; } }
+
+    @media (max-width: 960px) {
+      .hero { padding-top: 60px; }
+      .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, .88fr); gap: 22px; }
+      .hero h1 { font-size: clamp(47px, 6.5vw, 68px); }
+      .hero-visual { min-height: 500px; }
+      .phone { width: 254px; }
+      .phone-screen { min-height: 452px; padding-inline: 14px; }
+      .float-card.mix { right: -4px; top: 65px; }
+      .float-card.library { left: -6px; bottom: 47px; }
+      .orbit { width: 350px; height: 350px; }
+      .orbit.orbit-two { width: 400px; height: 400px; }
+      .flow-panel { padding: 42px; gap: 28px; }
+      .faq-grid { gap: 45px; }
+    }
+    @media (max-width: 760px) {
+      .wrap { width: min(100% - 36px, var(--max)); }
+      .nav { min-height: 68px; }
+      .nav-links {
+        position: absolute;
+        top: calc(100% + 1px);
+        right: 0;
+        left: 0;
+        display: none;
+        align-items: stretch;
+        gap: 0;
+        padding: 10px 18px 18px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(9,9,13,.97);
+      }
+      .nav-links.is-open { display: flex; flex-direction: column; }
+      .nav-links a { padding: 14px 4px; border-bottom: 1px solid rgba(255,255,255,.055); }
+      .nav-links a:last-child { border-bottom: 0; }
+      .nav-download { min-height: 40px; padding: 0 12px; font-size: 11px; }
+      .mobile-toggle { display: grid; }
+      .hero { padding: 54px 0 52px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 10px; }
+      .hero-copy { padding-bottom: 0; }
+      .hero h1 { max-width: 540px; font-size: clamp(48px, 12vw, 76px); }
+      .hero-copy > p { max-width: 520px; font-size: 15px; }
+      .hero-visual { min-height: 515px; margin-top: 6px; }
+      .phone { width: 263px; }
+      .phone-screen { min-height: 465px; }
+      .float-card.mix { right: max(0px, calc(50% - 205px)); top: 56px; }
+      .float-card.library { bottom: 49px; left: max(0px, calc(50% - 200px)); }
+      .orbit { width: 350px; height: 350px; }
+      .orbit.orbit-two { width: 400px; height: 400px; }
+      .section { padding: 82px 0; }
+      .features { padding-top: 84px; }
+      .section-head-row { display: block; }
+      .section-head-row .section-copy { margin-top: 17px; }
+      .feature-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 32px; }
+      .feature-card { min-height: unset; padding: 24px; }
+      .feature-icon { margin-top: 25px; }
+      .feature-card p { max-width: 460px; }
+      .flow-section { padding-top: 22px; }
+      .flow-panel { grid-template-columns: 1fr; gap: 30px; padding: 30px 24px; }
+      .flow-panel h2 { font-size: 39px; }
+      .flow-demo { padding: 21px 17px; }
+      .faq-grid { grid-template-columns: 1fr; gap: 32px; }
+      .faq .section-heading { max-width: 460px; }
+      .download-section { padding: 20px 0 76px; }
+      .download-panel { padding: 58px 20px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; justify-content: center; gap: 18px; padding: 26px 0; }
+    }
+    @media (max-width: 420px) {
+      .wrap { width: calc(100% - 30px); }
+      .brand { font-size: 15px; }
+      .nav-right { gap: 7px; }
+      .nav-download { gap: 6px; padding: 0 9px; }
+      .hero h1 { font-size: 47px; }
+      .hero-actions { align-items: stretch; }
+      .hero-actions .button { flex: 1 1 100%; }
+      .hero-note { align-items: flex-start; line-height: 1.7; }
+      .hero-visual { min-height: 490px; }
+      .phone { width: 245px; }
+      .phone-screen { min-height: 437px; padding: 17px 13px 14px; }
+      .float-card { padding: 10px; }
+      .float-card.mix { right: 0; top: 45px; }
+      .float-card.library { bottom: 38px; left: 0; }
+      .float-icon { width: 30px; height: 30px; }
+      .orbit { width: 300px; height: 300px; }
+      .orbit.orbit-two { width: 350px; height: 350px; }
+      .trust-item { align-items: flex-start; flex-direction: column; gap: 7px; padding: 15px 11px; }
+      .trust-item strong { font-size: 10px; }
+      .trust-item span { font-size: 9px; }
+      .section-heading { font-size: 38px; }
+      .flow-panel h2 { font-size: 35px; }
+      .footer-links { gap: 15px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav wrap" aria-label="Main navigation">
+      <a class="brand" href="#home" aria-label="Noisegraph home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 13h3l2.1-6 3.7 11 2.5-8 1.8 3H21" stroke="#a8ffd8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>noisegraph</span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="#features">Features</a>
+        <a href="#automix">AutoMix</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+      <div class="nav-right">
+        <a class="nav-download" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">
+          Get the app <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button class="mobile-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="nav-links">
+          <svg class="menu-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <svg class="close-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true" hidden><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-grid wrap">
+        <div class="hero-copy">
+          <div class="release-chip"><span class="status-dot" aria-hidden="true"></span> A music player built for the way you listen</div>
+          <h1>Make room<br><span class="second-line">for the <span class="gradient-text">music.</span></span></h1>
+          <p>Your music, without the noise. Noisegraph brings your local library, an immersive Now Playing experience, and thoughtful transitions together in one Android player.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Get the latest APK
+            </a>
+            <a class="button button-secondary" href="#features">Explore Noisegraph <span aria-hidden="true">↓</span></a>
+          </div>
+          <div class="hero-note">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 5 6v5c0 4.7 3 8.3 7 10 4-1.7 7-5.3 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Android · ARM64 APK · Open development
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="Illustration of the Noisegraph music player">
+          <div class="visual-orb" aria-hidden="true"></div>
+          <div class="orbit" aria-hidden="true"></div>
+          <div class="orbit orbit-two" aria-hidden="true"></div>
+
+          <div class="float-card mix">
+            <span class="float-icon" aria-hidden="true">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 7h4l8 10h4M16 17h4v-4M4 17h4l2-2M16 7h4v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 7h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span><span class="float-title">AutoMix</span><span class="float-subtitle">Keep the flow going</span></span>
+          </div>
+
+          <div class="phone" id="demo-phone">
+            <div class="phone-screen">
+              <div class="phone-status">
+                <span>9:41</span>
+                <span class="phone-status-icons" aria-hidden="true">
+                  <svg width="31" height="10" viewBox="0 0 31 10" fill="none"><path d="M1 8V5M5 8V3M9 8V1" stroke="#d5d4df" stroke-width="1.5" stroke-linecap="round"/><path d="M14 3h12a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="#d5d4df" stroke-width="1"/><path d="M15 4h8v4h-8z" fill="#d5d4df"/></svg>
+                </span>
+              </div>
+              <div class="phone-topline"><span>NOW PLAYING</span><span class="tiny-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+              <div class="album-art" role="img" aria-label="Abstract gradient album artwork"><span class="art-label">NG / 001</span></div>
+              <div class="track-head">
+                <div><h2 class="track-title">Soft Horizon</h2><div class="track-artist">A study in sound</div></div>
+                <span class="heart" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M20.8 8.8c0 5.2-8.8 10-8.8 10s-8.8-4.8-8.8-10a4.7 4.7 0 0 1 8.8-2.2 4.7 4.7 0 0 1 8.8 2.2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+              </div>
+              <div class="scrub"><div class="scrub-line"><div class="scrub-fill"></div></div><div class="scrub-time"><span>1:42</span><span>4:08</span></div></div>
+              <div class="player-controls">
+                <button type="button" aria-label="Previous track" tabindex="-1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 5v14M19 6 8 12l11 6V6Z" fill="currentColor"/></svg></button>
+                <button type="button" aria-label="Rewind" tabindex="-1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m11 6-9 6 9 6V6Zm11 0-9 6 9 6V6Z" fill="currentColor" opacity=".76"/></svg></button>
+                <button class="play-button" id="preview-play" type="button" aria-label="Play preview" aria-pressed="false">
+                  <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.8c0-.8.9-1.3 1.6-.8l9.3 6.2a1 1 0 0 1 0 1.6l-9.3 6.2c-.7.5-1.6 0-1.6-.8V5.8Z"/></svg>
+                  <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+                </button>
+                <button type="button" aria-label="Fast forward" tabindex="-1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m13 6 9 6-9 6V6ZM2 6l9 6-9 6V6Z" fill="currentColor" opacity=".76"/></svg></button>
+                <button type="button" aria-label="Next track" tabindex="-1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 5v14M5 6l11 6-11 6V6Z" fill="currentColor"/></svg></button>
+              </div>
+              <div class="waveform" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="phone-bottom-label" id="preview-status">Preview · tap play</div>
+            </div>
+          </div>
+
+          <div class="float-card library">
+            <span class="float-icon violet" aria-hidden="true">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H20v15H5.5A1.5 1.5 0 0 1 4 17.5v-12Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 17.5A1.5 1.5 0 0 1 5.5 16H20" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M8 11h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span><span class="float-title">Your library</span><span class="float-subtitle">Your collection, your way</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="trust-strip">
+      <div class="trust-items wrap">
+        <div class="trust-item">
+          <span class="trust-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5H20v14H5.5A1.5 1.5 0 0 1 4 17.5v-11Z" stroke="currentColor" stroke-width="1.5"/><path d="M4 17.5A1.5 1.5 0 0 1 5.5 16H20" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <span><strong>Your local music</strong><span>Made for the library on your device</span></span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M9 7h6M9 17h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <span><strong>Android first</strong><span>A listening experience built for mobile</span></span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h4l8 10h4M16 17h4v-4M4 17h4l2-2M16 7h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><strong>Made for the flow</strong><span>Explore transitions with AutoMix</span></span>
+        </div>
+      </div>
+    </div>
+
+    <section class="section features" id="features">
+      <div class="wrap">
+        <div class="section-head-row">
+          <div>
+            <span class="eyebrow">The listening experience</span>
+            <h2 class="section-heading">Less in the way.<br><span class="gradient-text">More in the moment.</span></h2>
+          </div>
+          <p class="section-copy">Every part of Noisegraph starts with a simple idea: the interface should support the music, not compete with it.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="feature-number">01 / YOUR COLLECTION</span>
+            <div class="feature-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5H20v14H5.5A1.5 1.5 0 0 1 4 17.5v-11Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 17.5A1.5 1.5 0 0 1 5.5 16H20M8 8.5h8M8 11.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <h3>Your music stays yours</h3>
+            <p>Start with the audio already on your Android device. A player experience built around your own collection.</p>
+            <span class="card-glow" aria-hidden="true"></span>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">02 / NOW PLAYING</span>
+            <div class="feature-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.6"/><path d="M9 7.5v9l7-4.5-7-4.5Z" fill="currentColor"/></svg></div>
+            <h3>Let the artwork breathe</h3>
+            <p>A focused Now Playing space pairs expressive artwork with the controls you need, right when you need them.</p>
+            <span class="card-glow" aria-hidden="true"></span>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">03 / AUTOMIX</span>
+            <div class="feature-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 7h4l8 10h4M16 17h4v-4M4 17h4l2-2M16 7h4v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h3>Keep the flow going</h3>
+            <p>AutoMix is designed to make the handoff between tracks feel more intentional, so listening can feel like one continuous session.</p>
+            <span class="card-glow" aria-hidden="true"></span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section flow-section" id="automix">
+      <div class="wrap">
+        <div class="flow-panel">
+          <div>
+            <span class="eyebrow">A different kind of flow</span>
+            <h2>One track ends.<br><span class="gradient-text">The feeling doesn't.</span></h2>
+            <p>AutoMix brings transition-focused playback into the Noisegraph experience. It's made for the spaces between songs—the part where your listening session can keep its momentum.</p>
+            <a class="button button-secondary" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer" style="margin-top:24px">Follow development <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="flow-demo" aria-label="Illustration of a transition between two tracks">
+            <div class="flow-demo-head"><strong>Transition preview</strong><span class="live-label"><span class="status-dot" aria-hidden="true"></span> AutoMix</span></div>
+            <div class="mix-track">
+              <div class="mix-cover" aria-hidden="true"></div>
+              <div class="mix-song"><strong>Soft Horizon</strong><span>Current track</span></div>
+              <span class="mix-time">−0:42</span>
+            </div>
+            <div class="mix-connector"><span>Transition window</span></div>
+            <div class="mix-track" style="margin-top:0">
+              <div class="mix-cover second" aria-hidden="true"></div>
+              <div class="mix-song"><strong>Green Light, Slow</strong><span>Up next</span></div>
+              <span class="mix-time">+0:00</span>
+            </div>
+            <div class="mini-wave" aria-hidden="true">
+              <i style="--h:23%"></i><i style="--h:38%"></i><i style="--h:52%"></i><i style="--h:29%"></i><i style="--h:67%"></i><i style="--h:90%"></i><i style="--h:43%"></i><i style="--h:32%"></i><i style="--h:62%"></i><i style="--h:76%"></i><i style="--h:48%"></i><i style="--h:33%"></i><i style="--h:56%"></i><i style="--h:80%"></i><i style="--h:45%"></i><i style="--h:29%"></i><i style="--h:68%"></i><i style="--h:40%"></i><i style="--h:85%"></i><i style="--h:53%"></i><i style="--h:28%"></i><i style="--h:60%"></i><i style="--h:76%"></i><i style="--h:35%"></i><i style="--h:49%"></i><i style="--h:70%"></i><i style="--h:41%"></i><i style="--h:23%"></i><i style="--h:58%"></i><i style="--h:81%"></i><i style="--h:45%"></i><i style="--h:31%"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq">
+      <div class="wrap faq-grid">
+        <div>
+          <span class="eyebrow">Good to know</span>
+          <h2 class="section-heading">A few things<br><span class="gradient-text">before you press play.</span></h2>
+          <p class="section-copy">New here? Here's what to expect from Noisegraph right now.</p>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>What is Noisegraph?</summary>
+            <p>Noisegraph is an Android music player project focused on local music playback, a modern Now Playing experience, and playback transitions.</p>
+          </details>
+          <details class="faq-item">
+            <summary>How do I download it?</summary>
+            <p>Open the latest GitHub Release, download the APK asset, and install it on your Android device. Review the release notes before installing a build.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Which devices are supported?</summary>
+            <p>The published build targets Android on ARM64 (arm64-v8a). Compatibility can vary by release, so check the notes attached to the build you download.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Is Noisegraph still in development?</summary>
+            <p>Yes. The feature set can change between builds. Follow the repository for development updates and use GitHub Issues to report a reproducible bug or suggest an improvement.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Where can I report a problem?</summary>
+            <p>Open a GitHub Issue and include steps to reproduce the problem, your Android version, device model, and any useful logs or screenshots.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="download-section">
+      <div class="wrap">
+        <div class="download-panel">
+          <span class="eyebrow">Ready when you are</span>
+          <h2 class="section-heading">Your library.<br><span class="gradient-text">A better flow.</span></h2>
+          <p class="section-copy">Explore Noisegraph, try the latest available Android build, and help shape what comes next.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">
+              Get the latest APK
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a class="button button-secondary" href="https://github.com/wandavenus/Noisegraph/issues" target="_blank" rel="noreferrer">Report an issue</a>
+          </div>
+          <div class="download-footnote">Android app · Builds and features may change during development</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner wrap">
+      <a class="brand" href="#home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13h3l2.1-6 3.7 11 2.5-8 1.8 3H21" stroke="#a8ffd8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>noisegraph</span>
+      </a>
+      <span class="footer-copy">© <span id="year">2026</span> Noisegraph. Let the music take shape.</span>
+      <div class="footer-links">
+        <a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://github.com/wandavenus/Noisegraph/releases" target="_blank" rel="noreferrer">Releases</a>
+        <a href="https://github.com/wandavenus/Noisegraph/issues" target="_blank" rel="noreferrer">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const menuButton = document.querySelector('.mobile-toggle');
+      const navLinks = document.getElementById('nav-links');
+      const menuIcon = document.querySelector('.menu-icon');
+      const closeIcon = document.querySelector('.close-icon');
+
+      if (menuButton && navLinks) {
+        menuButton.addEventListener('click', function () {
+          const isOpen = navLinks.classList.toggle('is-open');
+          menuButton.setAttribute('aria-expanded', String(isOpen));
+          menuButton.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+          menuIcon.hidden = isOpen;
+          closeIcon.hidden = !isOpen;
+        });
+        navLinks.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () {
+            navLinks.classList.remove('is-open');
+            menuButton.setAttribute('aria-expanded', 'false');
+            menuButton.setAttribute('aria-label', 'Open navigation');
+            menuIcon.hidden = false;
+            closeIcon.hidden = true;
+          });
+        });
+      }
+
+      const playButton = document.getElementById('preview-play');
+      const phone = document.getElementById('demo-phone');
+      const previewStatus = document.getElementById('preview-status');
+      if (playButton && phone && previewStatus) {
+        playButton.addEventListener('click', function () {
+          const isPlaying = playButton.getAttribute('aria-pressed') !== 'true';
+          playButton.setAttribute('aria-pressed', String(isPlaying));
+          playButton.setAttribute('aria-label', isPlaying ? 'Pause preview animation' : 'Play preview animation');
+          phone.classList.toggle('is-playing', isPlaying);
+          previewStatus.textContent = isPlaying ? 'Playing · visual preview' : 'Preview · tap play';
+        });
+      }
+
+      const year = document.getElementById('year');
+      if (year) year.textContent = String(new Date().getFullYear());
+    }());
+  </script>
+</body>
+</html>
