@@ -579,15 +579,29 @@ html[data-theme="dark"] .nav-links {
 .theme-toggle:hover {
   background: var(--soft)
 }
+
+/* Sidebar theme control */
+.nav-links .theme-toggle {
+  justify-self: start;
+  margin-top: 12px;
+}
+@media (max-width: 760px) {
+  .nav-links .theme-toggle {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
+}
 </style>
   </head>
   <body>
     <header class="topbar">
       <nav class="nav wrap" aria-label="Main navigation">
-<a class="brand" href="#home" aria-label="Noisegraph home"><span class="brand-mark" aria-hidden="true">N</span><span>noisegraph</span></a>
+<a class="brand" href="#home" aria-label="Noisegraph home"><span>Noisegraph</span></a>
         <div class="nav-links" id="nav-links"><a href="#features">Features</a><a href="#automix">AutoMix</a><a href="#faq">FAQ</a><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub ↗</a>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button>
         </div>
-        <div class="nav-right"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button><span class="nav-meta">Android / ARM64</span><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Get the app ↗</a><button class="mobile-toggle" id="mobile-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span aria-hidden="true">☰</span></button>
+        <div class="nav-right"><span class="nav-meta">Android / ARM64</span><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Get the app ↗</a><button class="mobile-toggle" id="mobile-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span aria-hidden="true">☰</span></button>
         </div>
       </nav>
     </header>
@@ -725,7 +739,7 @@ html[data-theme="dark"] .nav-links {
       </section>
     </main>
     <footer>
-      <div class="footer-inner wrap"><a class="brand" href="#home"><span class="brand-mark" aria-hidden="true">N</span><span>noisegraph</span></a><span class="footer-copy">© <span id="year">2026</span> Noisegraph / Made for your library.</span>
+      <div class="footer-inner wrap"><a class="brand" href="#home"><span>noisegraph</span></a><span class="footer-copy">© <span id="year">2026</span> Noisegraph / Made for your library.</span>
         <div class="footer-links"><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/wandavenus/Noisegraph/releases" target="_blank" rel="noreferrer">Releases</a><a href="https://github.com/wandavenus/Noisegraph/issues" target="_blank" rel="noreferrer">Support</a>
         </div>
       </div>
