@@ -164,7 +164,7 @@ jobs:
         run: |
           set -euo pipefail
           clang -std=c11 -O1 -g -fno-omit-frame-pointer \
-            -fsanitize=address,undefined -Wall -Wextra \
+            -fsanitize=address,undefined -Wall -Wextra -pthread \
             -I src \
             test/automix_native_c_test.c \
             src/automix_analyzer.c src/automix_planner.c \
@@ -182,7 +182,7 @@ jobs:
         working-directory: source/native_audio_runtime
         run: |
           set -euo pipefail
-          aarch64-linux-gnu-gcc -std=c11 -O2 -g -Wall -Wextra \
+          aarch64-linux-gnu-gcc -std=c11 -O2 -g -Wall -Wextra -pthread \
             -I src \
             test/automix_native_c_test.c \
             src/automix_analyzer.c src/automix_planner.c \
