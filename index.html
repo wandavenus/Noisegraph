@@ -281,34 +281,51 @@ h2 {
   font-size: 13.65px;
   line-height: 1.9
 }
-/* 5. Feature list */
-.feature-list {
-  margin-top: 32px;
-  border-top: 1px solid var(--line)
-}
-.feature-row {
+/* 5. Feature grid */
+.feature-grid {
   display: grid;
-  grid-template-columns: 52px minmax(0,1fr) minmax(200px,.8fr);
-  gap: 20px;
-  align-items: start;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--line)
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 32px;
+  border: 1px solid var(--line);
+  background: var(--line);
 }
-.feature-marker {
+.feature-card {
+  min-width: 0;
+  padding: 22px 20px 20px;
+  background: var(--paper);
+}
+.feature-index {
+  display: block;
+  margin-bottom: 21px;
   color: var(--muted);
-  font-size: 12.6px
+  font-size: 11.55px;
 }
-.feature-row h3 {
+.feature-card h3 {
   margin: 0;
-  font-size: 15.75px;
+  font-size: 14.7px;
   font-weight: 700;
-  letter-spacing: -.04em
+  letter-spacing: -.045em;
+  line-height: 1.5;
 }
-.feature-row p {
-  margin: 0;
+.feature-card p {
+  margin: 10px 0 0;
   color: var(--body);
-  font-size: 12.6px;
-  line-height: 1.8
+  font-size: 12.075px;
+  line-height: 1.85;
+}
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 15px;
+}
+.feature-tags span {
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9.45px;
+  line-height: 1.7;
 }
 /* 6. AutoMix */
 .automix-panel {
@@ -503,12 +520,17 @@ footer {
   .release-content .button {
     width: 100%
   }
-  .feature-row {
-    grid-template-columns: 35px minmax(0,1fr);
-    gap: 12px
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .feature-row p {
-    grid-column: 2
+  .feature-card {
+    padding: 18px 16px;
+  }
+  .feature-index {
+    margin-bottom: 15px;
+  }
+  .feature-grid {
+    grid-template-columns: 1fr;
   }
   .automix-panel,.faq-grid {
     grid-template-columns: 1fr;
@@ -611,7 +633,7 @@ html[data-theme="dark"] .nav-links {
         </div>
         <h1>Your music.<br>A little more in flow.
         </h1>
-        <p class="hero-copy">Noisegraph is a music player for the collection already on your device. A focused listening experience, expressive artwork, and thoughtful transitions—without getting between you and the music.
+        <p class="hero-copy">Noisegraph is a music player for the collection already on your device. A focused listening experience with synced lyrics, expressive artwork, detailed sound controls, and thoughtful transitions—without getting between you and the music.
         </p>
         <div class="hero-actions"><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Download latest APK ↗</a><a class="button" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">Explore the source ↗</a>
         </div>
@@ -631,30 +653,60 @@ html[data-theme="dark"] .nav-links {
         </h2>
         <p class="section-intro">Built for people who keep their music close and care about how one song gives way to the next.
         </p>
-        <div class="feature-list">
-          <article class="feature-row"><span class="feature-marker">[01]</span>
-            <h3>Your local collection
-            </h3>
-            <p>Start with the audio already on your Android device, with an experience centered on your own music.
-            </p>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="feature-index">[01] / LIBRARY</span>
+            <h3>Your local music, organized</h3>
+            <p>Browse songs, albums, artists, and playlists from your device. Search and library controls keep your own collection at the center.</p>
+            <div class="feature-tags"><span>LOCAL FILES</span><span>SEARCH</span><span>PLAYLISTS</span></div>
           </article>
-          <article class="feature-row"><span class="feature-marker">[02]</span>
-            <h3>A focused Now Playing
-            </h3>
-            <p>Expressive artwork and essential playback controls, with a visual system designed to keep attention on the track.
-            </p>
+          <article class="feature-card">
+            <span class="feature-index">[02] / NOW PLAYING</span>
+            <h3>A player that feels alive</h3>
+            <p>Choose the animated Fluid background or artwork blur, with expressive cover art and motion designed around the music.</p>
+            <div class="feature-tags"><span>FLUID</span><span>ARTWORK BLUR</span></div>
           </article>
-          <article class="feature-row"><span class="feature-marker">[03]</span>
-            <h3>Playback that keeps moving
-            </h3>
-            <p>Thoughtful playback tools and ongoing work on transitions help make a listening session feel more continuous.
-            </p>
+          <article class="feature-card">
+            <span class="feature-index">[03] / LYRICS</span>
+            <h3>Lyrics in sync with the song</h3>
+            <p>Open the lyrics overlay for playback-synced lines and karaoke-style highlighting. Lyrics can come from embedded, local, and supported online sources.</p>
+            <div class="feature-tags"><span>SYNCED LYRICS</span><span>KARAOKE</span></div>
           </article>
-          <article class="feature-row"><span class="feature-marker">[04]</span>
-            <h3>Open development
-            </h3>
-            <p>Follow progress, review changes, and report reproducible issues directly in the project repository.
-            </p>
+          <article class="feature-card">
+            <span class="feature-index">[04] / EQUALIZER</span>
+            <h3>Shape the sound your way</h3>
+            <p>Adjust the equalizer with presets or custom bands, then fine-tune playback with crossfeed, acoustic enhancement, stereo widening, and reverb.</p>
+            <div class="feature-tags"><span>EQ PRESETS</span><span>AUDIO EFFECTS</span></div>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">[05] / LOUDNESS</span>
+            <h3>More consistent track levels</h3>
+            <p>ReplayGain-aware playback helps reduce perceived volume jumps between tracks when usable loudness metadata is available.</p>
+            <div class="feature-tags"><span>REPLAYGAIN</span><span>LOUDNESS</span></div>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">[06] / SPEED & PITCH</span>
+            <h3>Change pace, shape pitch</h3>
+            <p>Native Signalsmith Stretch processing supports playback speed and pitch changes, with sound quality depending on the amount of adjustment.</p>
+            <div class="feature-tags"><span>TIME STRETCH</span><span>PITCH SHIFT</span></div>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">[07] / TRANSITIONS</span>
+            <h3>Make track handoffs smoother</h3>
+            <p>Set crossfade behavior and duration for transitions between songs. AutoMix adds a separate, analysis-driven way to plan the next track.</p>
+            <div class="feature-tags"><span>CROSSFADE</span><span>AUTOMIX</span></div>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">[08] / PLAYBACK</span>
+            <h3>Queue it up. Wind down.</h3>
+            <p>Manage what plays next and use the sleep timer to end a listening session without having to stop playback manually.</p>
+            <div class="feature-tags"><span>PLAY QUEUE</span><span>SLEEP TIMER</span></div>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">[09] / BIT-PERFECT</span>
+            <h3>A dedicated audio-bypass mode</h3>
+            <p>Bit-Perfect Mode provides an app-wide processing bypass for a more direct playback path. Sound-processing controls are locked while it is active.</p>
+            <div class="feature-tags"><span>PROCESSING BYPASS</span><span>LISTENING MODE</span></div>
           </article>
         </div>
       </section>
