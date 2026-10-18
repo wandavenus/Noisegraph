@@ -110,6 +110,7 @@ jobs:
   native-c:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'native-c' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -122,7 +123,7 @@ jobs:
             exit 1
           fi
           echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Testing native DSP on Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "Testing native DSP + AutoMix C/NEON on Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout private Dump source
         uses: actions/checkout@v7
@@ -134,29 +135,64 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Compile native AutoMix tests with sanitizers
-        working-directory: source
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Native Toolchain and ARM64 Emulation
         run: |
           set -euo pipefail
-          mkdir -p build/native-tests
-          cc \
-            -std=c11 -O1 -g -Wall -Wextra \
-            -fsanitize=address,undefined -fno-omit-frame-pointer \
-            -Inative_audio_runtime/src \
-            native_audio_runtime/test/automix_native_c_test.c \
-            native_audio_runtime/src/automix_analyzer.c \
-            native_audio_runtime/src/automix_planner.c \
-            native_audio_runtime/src/automix_phase_lock.c \
-            native_audio_runtime/src/automix_live_tracker.c \
-            native_audio_runtime/src/automix_tone_processor.c \
-            -lm -o build/native-tests/automix_native_c_test
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build gcc-aarch64-linux-gnu qemu-user-static
 
-      - name: Run native AutoMix tests
-        working-directory: source
+      - name: Get Native Runtime Dependencies
+        working-directory: source/native_audio_runtime
+        run: flutter pub get
+
+      - name: Run Native Unit Tests
+        working-directory: source/native_audio_runtime
+        run: flutter test test/native_audio_runtime_test.dart
+
+      - name: Run Performance Benchmarks
+        working-directory: source/native_audio_runtime
+        run: flutter test test/native_benchmark.dart
+
+      - name: Build AutoMix C Suite (x86_64, ASan+UBSan)
+        working-directory: source/native_audio_runtime
+        run: |
+          set -euo pipefail
+          clang -std=c11 -O1 -g -fno-omit-frame-pointer \
+            -fsanitize=address,undefined -Wall -Wextra \
+            -I src \
+            test/automix_native_c_test.c \
+            src/automix_analyzer.c src/automix_planner.c \
+            src/automix_phase_lock.c src/automix_tone_processor.c \
+            src/automix_live_tracker.c \
+            -lm -o /tmp/automix_native_c_test
+
+      - name: Run AutoMix C Suite (x86_64)
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
-        run: build/native-tests/automix_native_c_test
+        run: /tmp/automix_native_c_test
+
+      - name: Build AutoMix C Suite (arm64 + NEON)
+        working-directory: source/native_audio_runtime
+        run: |
+          set -euo pipefail
+          aarch64-linux-gnu-gcc -std=c11 -O2 -g -Wall -Wextra \
+            -I src \
+            test/automix_native_c_test.c \
+            src/automix_analyzer.c src/automix_planner.c \
+            src/automix_phase_lock.c src/automix_tone_processor.c \
+            src/automix_live_tracker.c \
+            src/automix_neon.S src/automix_tone_neon.S \
+            -lm -o /tmp/automix_native_c_test_arm64
+
+      - name: Run AutoMix C Suite (arm64 under qemu)
+        run: qemu-aarch64-static -L /usr/aarch64-linux-gnu /tmp/automix_native_c_test_arm64
 
   kotlin:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'kotlin' }}
