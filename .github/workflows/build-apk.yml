@@ -68,6 +68,37 @@ jobs:
             echo 'CHANGELOG_EOF'
           } >> "$GITHUB_OUTPUT"
 
+      - name: Install pinned Android NDK
+        working-directory: source
+        run: |
+          set -euo pipefail
+          EXPECTED_NDK_VERSION="28.2.13676358"
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -path '*/bin/sdkmanager' 2>/dev/null | sort -V | tail -n 1)"
+          fi
+          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(command -v sdkmanager || true)"
+          fi
+          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
+            echo "::error::sdkmanager not found; Android SDK root was '$SDK_ROOT'."
+            exit 1
+          fi
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" --install "ndk;$EXPECTED_NDK_VERSION"
+          NDK_DIR="$SDK_ROOT/ndk/$EXPECTED_NDK_VERSION"
+          test -f "$NDK_DIR/source.properties"
+          ACTUAL_NDK_VERSION="$(sed -n 's/^Pkg.Revision *= *//p' "$NDK_DIR/source.properties" | head -n 1)"
+          if [ "$ACTUAL_NDK_VERSION" != "$EXPECTED_NDK_VERSION" ]; then
+            echo "::error::Expected NDK $EXPECTED_NDK_VERSION, found '${ACTUAL_NDK_VERSION:-unknown}'."
+            exit 1
+          fi
+          echo "ndk.dir=$NDK_DIR" >> "$GITHUB_WORKSPACE/source/android/local.properties"
+          echo "ANDROID_NDK_HOME=$NDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK=$NDK_DIR" >> "$GITHUB_ENV"
+          echo "Android NDK $ACTUAL_NDK_VERSION ready at $NDK_DIR."
+
       - name: Set up Java
         uses: actions/setup-java@v6
         with:
@@ -147,6 +178,17 @@ jobs:
           --no-pub
           --obfuscate
           --split-debug-info=build/debug-info
+
+      - name: Verify FFmpeg JNI and license notices are packaged
+        working-directory: source
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          test -f "$APK"
+          unzip -Z -1 "$APK" | grep -Fx "lib/arm64-v8a/libffmpegJNI.so"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/COPYING.LGPLv2.1"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/LICENSE-2.0.txt"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/THIRD_PARTY_NOTICES.txt"
 
       - name: Prepare APK
         env:
