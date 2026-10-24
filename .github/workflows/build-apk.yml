@@ -68,6 +68,13 @@ jobs:
             echo 'CHANGELOG_EOF'
           } >> "$GITHUB_OUTPUT"
 
+      - name: Install pinned Android NDK
+        working-directory: source
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        run: bash scripts/ci/install-android-ndk.sh
+
       - name: Set up Java
         uses: actions/setup-java@v6
         with:
@@ -147,6 +154,17 @@ jobs:
           --no-pub
           --obfuscate
           --split-debug-info=build/debug-info
+
+      - name: Verify FFmpeg JNI and license notices are packaged
+        working-directory: source
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          test -f "$APK"
+          unzip -Z -1 "$APK" | grep -Fx "lib/arm64-v8a/libffmpegJNI.so"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/COPYING.LGPLv2.1"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/LICENSE-2.0.txt"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/THIRD_PARTY_NOTICES.txt"
 
       - name: Prepare APK
         env:
