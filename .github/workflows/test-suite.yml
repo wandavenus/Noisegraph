@@ -169,7 +169,7 @@ jobs:
             test/automix_native_c_test.c \
             src/automix_analyzer.c src/automix_planner.c \
             src/automix_phase_lock.c src/automix_tone_processor.c \
-            src/automix_live_tracker.c \
+            src/automix_fade_processor.c src/automix_live_tracker.c \
             -lm -o /tmp/automix_native_c_test
 
       - name: Run AutoMix C Suite (x86_64)
@@ -187,7 +187,7 @@ jobs:
             test/automix_native_c_test.c \
             src/automix_analyzer.c src/automix_planner.c \
             src/automix_phase_lock.c src/automix_tone_processor.c \
-            src/automix_live_tracker.c \
+            src/automix_fade_processor.c src/automix_live_tracker.c \
             src/automix_neon.S src/automix_tone_neon.S \
             -lm -o /tmp/automix_native_c_test_arm64
 
