@@ -54,7 +54,7 @@ Found a bug or have an idea? Open an [Issue](https://github.com/wandavenus/Noise
 
 ## License
 
-Noisegraph is licensed under the GNU General Public License v3.0 only. See [`LICENSE`](LICENSE) for the full terms. Third-party components, libraries, and assets may be subject to separate licenses.
+Noisegraph's original source code and project materials are licensed under the GNU General Public License v3.0 only. Copyright (C) 2026 wandavenus. See [`LICENSE`](LICENSE) for the full terms. Third-party components, libraries, and assets remain under their respective licenses.
 
 ## Links
 
