@@ -54,7 +54,11 @@ Found a bug or have an idea? Open an [Issue](https://github.com/wandavenus/Noise
 
 ## License
 
-Noisegraph's original source code and project materials are licensed under the GNU General Public License v3.0 only. Copyright (C) 2026 wandavenus. See [`LICENSE`](LICENSE) for the full terms. Third-party components, libraries, and assets remain under their respective licenses.
+The GNU General Public License v3.0 only in [`LICENSE`](LICENSE) applies to the original files committed to this repository, including this landing page and repository documentation.
+
+It does **not** grant a license to the Noisegraph Android application, its source code, or APK files attached to GitHub Releases. Those materials need their own explicit license terms and complete third-party notices. The application source currently has a separate all-rights-reserved notice, and some bundled assets have independent restrictions; this repository's GPL license does not override them.
+
+Third-party components and assets remain under their respective license terms.
 
 ## Links
 
