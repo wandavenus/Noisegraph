@@ -52,6 +52,10 @@ Only install APKs you trust. Back up anything important before installing a deve
 
 Found a bug or have an idea? Open an [Issue](https://github.com/wandavenus/Noisegraph/issues) with steps to reproduce the problem and, if possible, your Android version and device model.
 
+## License
+
+Noisegraph's original source code and project materials are licensed under the GNU General Public License v3.0 only. Copyright (C) 2026 wandavenus. See [`LICENSE`](LICENSE) for the full terms. Third-party components, libraries, and assets remain under their respective licenses.
+
 ## Links
 
 - **Releases:** https://github.com/wandavenus/Noisegraph/releases
