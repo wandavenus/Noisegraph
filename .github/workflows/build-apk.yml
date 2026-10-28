@@ -46,6 +46,29 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Cache FFmpeg build outputs
+        id: ffmpeg-cache
+        uses: actions/cache@v6
+        with:
+          path: source/android/decoder-ffmpeg/.ffmpeg-build
+          key: ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-${{ hashFiles('source/android/build-ffmpeg-jni.sh', 'source/android/decoder-ffmpeg/src/main/jni/ffmpeg_jni.cc') }}
+          restore-keys: |
+            ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-
+
+      - name: Resolve Android SDK cache path
+        id: android-sdk
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "ndk_path=$SDK_ROOT/ndk/28.2.13676358" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pinned Android NDK
+        id: ndk-cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.android-sdk.outputs.ndk_path }}
+          key: android-ndk-${{ runner.os }}-${{ runner.arch }}-28.2.13676358
+
       - name: Generate changelog from source commit in Dump
         id: changelog
         env:
@@ -85,9 +108,13 @@ jobs:
             echo "::error::sdkmanager not found; Android SDK root was '$SDK_ROOT'."
             exit 1
           fi
-          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
-          "$SDKMANAGER" --install "ndk;$EXPECTED_NDK_VERSION"
           NDK_DIR="$SDK_ROOT/ndk/$EXPECTED_NDK_VERSION"
+          if [ ! -f "$NDK_DIR/source.properties" ]; then
+            yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+            "$SDKMANAGER" --install "ndk;$EXPECTED_NDK_VERSION"
+          else
+            echo "Using cached or preinstalled Android NDK at $NDK_DIR."
+          fi
           test -f "$NDK_DIR/source.properties"
           ACTUAL_NDK_VERSION="$(sed -n 's/^Pkg.Revision *= *//p' "$NDK_DIR/source.properties" | head -n 1)"
           if [ "$ACTUAL_NDK_VERSION" != "$EXPECTED_NDK_VERSION" ]; then
