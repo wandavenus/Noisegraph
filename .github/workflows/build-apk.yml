@@ -44,7 +44,20 @@ jobs:
           token: ${{ secrets.SOURCE_READ_TOKEN }}
           path: source
           persist-credentials: false
-          fetch-depth: 0
+          # The build targets an explicit commit SHA and does not use source history.
+          fetch-depth: 1
+
+      # Reuse CMake/Ninja build trees and FetchContent sources for libebur128,
+      # TagLib, and Signalsmith. On source/config changes, restore the last
+      # compatible tree so CMake/Ninja can regenerate and rebuild changed inputs.
+      - name: Cache native CMake and Ninja build
+        id: native-cmake-cache
+        uses: actions/cache@v6
+        with:
+          path: source/android/app/.cxx
+          key: native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-cmake-3.22.1-arm64-v8a-${{ hashFiles('source/android/app/build.gradle', 'source/android/build.gradle', 'source/android/settings.gradle', 'source/android/gradle.properties', 'source/android/app/src/main/cpp/**/*', 'source/native_audio_runtime/src/**/*') }}
+          restore-keys: |
+            native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-cmake-3.22.1-arm64-v8a-
 
       - name: Cache FFmpeg build outputs
         id: ffmpeg-cache
