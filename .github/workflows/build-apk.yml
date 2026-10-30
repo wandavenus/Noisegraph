@@ -155,6 +155,13 @@ jobs:
         with:
           channel: stable
           cache: true
+      - name: Cache Flutter Pub dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.pub-cache
+          key: flutter-pub-${{ runner.os }}-${{ hashFiles('source/pubspec.lock') }}
+          restore-keys: |
+            flutter-pub-${{ runner.os }}-
 
       - name: Install dependencies
         working-directory: source
