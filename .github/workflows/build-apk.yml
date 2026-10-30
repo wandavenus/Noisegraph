@@ -51,6 +51,24 @@ jobs:
           # The build targets an explicit commit SHA and does not use source history.
           fetch-depth: 1
 
+      # Resolve the Android SDK root once so the NDK cache and installer use the same path.
+      - name: Resolve Android SDK root
+        id: android-sdk
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "root=$SDK_ROOT" >> "$GITHUB_OUTPUT"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+
+      # Cache the exact pinned NDK; a cache hit avoids downloading and unpacking it
+      # on every fresh GitHub-hosted runner. The version is part of the cache key.
+      - name: Cache pinned Android NDK
+        id: android-ndk-cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
+          key: android-ndk-${{ runner.os }}-${{ runner.arch }}-28.2.13676358
+
       # Reuse CMake/Ninja build trees and FetchContent sources for libebur128,
       # TagLib, and Signalsmith. On source/config changes, restore the last
       # compatible tree so CMake/Ninja can regenerate and rebuild changed inputs.
