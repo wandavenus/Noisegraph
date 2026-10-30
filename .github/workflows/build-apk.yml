@@ -92,27 +92,6 @@ jobs:
 
       # Keep the NDK at the runner's Android SDK path. FFmpeg's configuration
       # fingerprint includes the compiler path, and CMake caches absolute NDK paths.
-      - name: Generate changelog from source commit in Dump
-        id: changelog
-        env:
-          GH_TOKEN: ${{ secrets.SOURCE_READ_TOKEN }}
-          SOURCE_SHA: ${{ steps.source.outputs.sha }}
-        run: |
-          set -euo pipefail
-
-          # Use the subject of the exact Dump commit being built.
-          commit_title="$(gh api "repos/wandavenus/Dump/commits/$SOURCE_SHA" --jq '.commit.message | split("\n")[0]')"
-
-          if [ -z "$commit_title" ]; then
-            echo "::error::Unable to resolve the source commit title from wandavenus/Dump."
-            exit 1
-          fi
-
-          {
-            echo 'body<<CHANGELOG_EOF'
-            printf '%s\n' "- $commit_title"
-            echo 'CHANGELOG_EOF'
-          } >> "$GITHUB_OUTPUT"
 
       - name: Install pinned Android NDK
         working-directory: source
@@ -284,9 +263,6 @@ jobs:
           draft: true
           body: |
             Automated release build for Noisegraph.
-
-            Changelog:
-            ${{ steps.changelog.outputs.body }}
 
             Source revision: `${{ steps.source.outputs.sha }}`
 
