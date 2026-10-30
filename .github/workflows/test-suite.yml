@@ -284,6 +284,15 @@ jobs:
         with:
           add-job-summary: never
 
+      - name: Configure writable Android SDK root
+        run: |
+          set -euo pipefail
+          SDK_ROOT="$HOME/.android/sdk"
+          mkdir -p "$SDK_ROOT"
+          {
+            echo "ANDROID_HOME=$SDK_ROOT"
+            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
+          } >> "$GITHUB_ENV"
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
       - name: Resolve Android SDK root
@@ -300,9 +309,9 @@ jobs:
             ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358-v2
           restore-keys: |
-            android-toolchain-${{ runner.os }}-${{ runner.arch }}-
+            android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
@@ -366,6 +375,15 @@ jobs:
         with:
           add-job-summary: never
 
+      - name: Configure writable Android SDK root
+        run: |
+          set -euo pipefail
+          SDK_ROOT="$HOME/.android/sdk"
+          mkdir -p "$SDK_ROOT"
+          {
+            echo "ANDROID_HOME=$SDK_ROOT"
+            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
+          } >> "$GITHUB_ENV"
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
       - name: Resolve Android SDK root
@@ -382,9 +400,9 @@ jobs:
             ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358-v2
           restore-keys: |
-            android-toolchain-${{ runner.os }}-${{ runner.arch }}-
+            android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
