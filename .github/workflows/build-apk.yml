@@ -21,6 +21,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Resolve source commit
         id: source
@@ -221,13 +222,20 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-        run: >
-          flutter build apk
-          --release
-          --target-platform android-arm64
-          --no-pub
-          --obfuscate
-          --split-debug-info=build/debug-info
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::error::SENTRY_DSN is missing from the production environment variables."
+            exit 1
+          fi
+          flutter build apk \
+            --release \
+            --target-platform android-arm64 \
+            --no-pub \
+            --obfuscate \
+            --split-debug-info=build/debug-info \
+            --dart-define=SENTRY_DSN="$SENTRY_DSN"
 
       - name: Verify FFmpeg JNI and license notices are packaged
         working-directory: source
