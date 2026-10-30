@@ -164,9 +164,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/ccache
-          key: ccache-${{ runner.os }}-${{ runner.arch }}-native-c-v1
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-clang-aarch64-v1-${{ hashFiles('source/native_audio_runtime/src/**/*.c', 'source/native_audio_runtime/src/**/*.h', 'source/native_audio_runtime/src/**/*.S', 'source/native_audio_runtime/test/automix_native_c_test.c') }}
           restore-keys: |
-            ccache-${{ runner.os }}-${{ runner.arch }}-native-c-
+            ccache-${{ runner.os }}-${{ runner.arch }}-clang-aarch64-v1-
       - name: Configure native compiler cache
         run: ccache --max-size=1G
 
