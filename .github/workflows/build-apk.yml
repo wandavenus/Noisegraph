@@ -72,21 +72,8 @@ jobs:
           restore-keys: |
             ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-
 
-      - name: Resolve writable Android NDK cache path
-        id: android-sdk
-        run: |
-          set -euo pipefail
-          NDK_ROOT="$HOME/.android/sdk/ndk/28.2.13676358"
-          mkdir -p "$(dirname "$NDK_ROOT")"
-          echo "ndk_path=$NDK_ROOT" >> "$GITHUB_OUTPUT"
-
-      - name: Cache pinned Android NDK
-        id: ndk-cache
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.android-sdk.outputs.ndk_path }}
-          key: android-ndk-home-${{ runner.os }}-${{ runner.arch }}-28.2.13676358-v2
-
+      # Keep the NDK at the runner's Android SDK path. FFmpeg's configuration
+      # fingerprint includes the compiler path, and CMake caches absolute NDK paths.
       - name: Generate changelog from source commit in Dump
         id: changelog
         env:
@@ -126,14 +113,12 @@ jobs:
             echo "::error::sdkmanager not found; Android SDK root was '$SDK_ROOT'."
             exit 1
           fi
-          NDK_SDK_ROOT="$HOME/.android/sdk"
-          mkdir -p "$NDK_SDK_ROOT"
-          NDK_DIR="$NDK_SDK_ROOT/ndk/$EXPECTED_NDK_VERSION"
+          NDK_DIR="$SDK_ROOT/ndk/$EXPECTED_NDK_VERSION"
           if [ ! -f "$NDK_DIR/source.properties" ]; then
-            yes | "$SDKMANAGER" --sdk_root="$NDK_SDK_ROOT" --licenses >/dev/null 2>&1 || true
-            "$SDKMANAGER" --sdk_root="$NDK_SDK_ROOT" --install "ndk;$EXPECTED_NDK_VERSION"
+            yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null 2>&1 || true
+            "$SDKMANAGER" --sdk_root="$SDK_ROOT" --install "ndk;$EXPECTED_NDK_VERSION"
           else
-            echo "Using cached Android NDK at $NDK_DIR."
+            echo "Using runner Android NDK at $NDK_DIR."
           fi
           test -f "$NDK_DIR/source.properties"
           ACTUAL_NDK_VERSION="$(sed -n 's/^Pkg.Revision *= *//p' "$NDK_DIR/source.properties" | head -n 1)"
@@ -162,14 +147,6 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Cache Flutter Pub dependencies
-        uses: actions/cache@v6
-        with:
-          path: ~/.pub-cache
-          key: flutter-pub-${{ runner.os }}-${{ hashFiles('source/pubspec.lock') }}
-          restore-keys: |
-            flutter-pub-${{ runner.os }}-
-
       - name: Install dependencies
         working-directory: source
         run: flutter pub get
