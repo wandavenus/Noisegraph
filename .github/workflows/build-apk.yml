@@ -202,7 +202,7 @@ jobs:
             --target-platform android-arm64 \
             --no-pub \
             --obfuscate \
-            --split-debug-info=build/debug-info \
+            --split-debug-info=build/debug-info
 
       - name: Verify FFmpeg JNI and license notices are packaged
         working-directory: source
