@@ -256,7 +256,7 @@ jobs:
             exit 0
           fi
           test -s build/debug-info/obfuscation-map.json
-          dart run sentry_dart_plugin
+          dart run sentry_dart_plugin --sentry-define=ignore_missing=true
 
       - name: Verify FFmpeg JNI and license notices are packaged
         working-directory: source
