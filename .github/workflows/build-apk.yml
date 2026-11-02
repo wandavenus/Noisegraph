@@ -95,7 +95,9 @@ jobs:
 
       - name: Install pinned Android NDK
         working-directory: source
-        run: bash scripts/ci/install-android-ndk.sh
+        run: |
+          set -euo pipefail
+          GITHUB_WORKSPACE="$GITHUB_WORKSPACE/source" bash scripts/ci/install-android-ndk.sh
 
       - name: Set up Java
         uses: actions/setup-java@v6
