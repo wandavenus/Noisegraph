@@ -30,8 +30,8 @@ jobs:
         run: |
           set -euo pipefail
           SHA="${EVENT_SHA:-$MANUAL_SHA}"
-          if [ -z "$SHA" ]; then
-            echo "::error::Source commit SHA is missing."
+          if [[ ! "$SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Source commit SHA is missing or is not a full 40-character commit SHA."
             exit 1
           fi
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
@@ -46,6 +46,12 @@ jobs:
           persist-credentials: false
           # The build targets an explicit commit SHA and does not use source history.
           fetch-depth: 1
+
+      - name: Validate native build script syntax
+        working-directory: source
+        run: |
+          bash -n android/build-ffmpeg-jni.sh
+          bash -n scripts/ci/install-android-ndk.sh
 
       # Resolve the Android SDK root once so the NDK cache and installer use the same path.
       - name: Resolve Android SDK root
@@ -82,7 +88,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: source/android/decoder-ffmpeg/.ffmpeg-build
-          key: ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-${{ hashFiles('source/android/build-ffmpeg-jni.sh', 'source/android/decoder-ffmpeg/src/main/jni/ffmpeg_jni.cc') }}
+          key: ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-${{ hashFiles('source/android/build-ffmpeg-jni.sh', 'source/android/decoder-ffmpeg/src/main/jni/ffmpeg_jni.cc', 'source/android/decoder-ffmpeg/src/main/jni/extradata_utils.h') }}
           restore-keys: |
             ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-
 
@@ -93,36 +99,8 @@ jobs:
         working-directory: source
         run: |
           set -euo pipefail
-          EXPECTED_NDK_VERSION="28.2.13676358"
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
-          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          if [ ! -x "$SDKMANAGER" ]; then
-            SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -path '*/bin/sdkmanager' 2>/dev/null | sort -V | tail -n 1)"
-          fi
-          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
-            SDKMANAGER="$(command -v sdkmanager || true)"
-          fi
-          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
-            echo "::error::sdkmanager not found; Android SDK root was '$SDK_ROOT'."
-            exit 1
-          fi
-          NDK_DIR="$SDK_ROOT/ndk/$EXPECTED_NDK_VERSION"
-          if [ ! -f "$NDK_DIR/source.properties" ]; then
-            yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null 2>&1 || true
-            "$SDKMANAGER" --sdk_root="$SDK_ROOT" --install "ndk;$EXPECTED_NDK_VERSION"
-          else
-            echo "Using runner Android NDK at $NDK_DIR."
-          fi
-          test -f "$NDK_DIR/source.properties"
-          ACTUAL_NDK_VERSION="$(sed -n 's/^Pkg.Revision *= *//p' "$NDK_DIR/source.properties" | head -n 1)"
-          if [ "$ACTUAL_NDK_VERSION" != "$EXPECTED_NDK_VERSION" ]; then
-            echo "::error::Expected NDK $EXPECTED_NDK_VERSION, found '${ACTUAL_NDK_VERSION:-unknown}'."
-            exit 1
-          fi
-          echo "ndk.dir=$NDK_DIR" >> "$GITHUB_WORKSPACE/source/android/local.properties"
-          echo "ANDROID_NDK_HOME=$NDK_DIR" >> "$GITHUB_ENV"
-          echo "ANDROID_NDK=$NDK_DIR" >> "$GITHUB_ENV"
-          echo "Android NDK $ACTUAL_NDK_VERSION ready at $NDK_DIR."
+          # The Dump installer writes local.properties relative to its checkout.
+          GITHUB_WORKSPACE="$GITHUB_WORKSPACE/source" bash scripts/ci/install-android-ndk.sh
 
       - name: Set up Java
         uses: actions/setup-java@v6
@@ -139,10 +117,25 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
       - name: Install dependencies
         working-directory: source
         run: flutter pub get
+
+      - name: Configure Android SDK and NDK paths
+        working-directory: source
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          NDK_DIR="$SDK_ROOT/ndk/28.2.13676358"
+          test -f "$NDK_DIR/source.properties"
+          {
+            echo "flutter.sdk=$FLUTTER_ROOT"
+            echo "sdk.dir=$SDK_ROOT"
+            echo "ndk.dir=$NDK_DIR"
+          } > android/local.properties
+          chmod +x android/gradlew
 
       - name: Set Android version
         working-directory: source
@@ -187,6 +180,10 @@ jobs:
             -destkeypass "ci-validation-only" \
             -noprompt >/dev/null 2>&1
           rm -f /tmp/release-key-validation.jks
+
+      - name: Build FFmpeg JNI library
+        working-directory: source/android
+        run: ./gradlew :decoder-ffmpeg:buildFfmpegJni --no-daemon
 
       - name: Build release APK
         working-directory: source

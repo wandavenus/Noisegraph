@@ -16,6 +16,7 @@ jobs:
   flutter:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'flutter' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -40,10 +41,17 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
+      - name: Validate native build script syntax
+        working-directory: source
+        run: |
+          bash -n android/build-ffmpeg-jni.sh
+          bash -n scripts/ci/install-android-ndk.sh
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -68,6 +76,7 @@ jobs:
   automix-dart:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'automix-dart' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -96,6 +105,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -124,7 +134,7 @@ jobs:
   native-c:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'native-c' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - name: Validate source commit
         id: source
@@ -153,6 +163,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Install Native Toolchain and ARM64 Emulation
@@ -250,6 +261,7 @@ jobs:
   kotlin:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'kotlin' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Validate source commit
         id: source
@@ -315,12 +327,13 @@ jobs:
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -334,13 +347,31 @@ jobs:
         working-directory: source
         run: flutter pub get
 
-      - name: Run Kotlin unit tests
+      - name: Configure Android SDK and NDK paths
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.android/sdk}}"
+          NDK_DIR="$SDK_ROOT/ndk/28.2.13676358"
+          test -f "$NDK_DIR/source.properties"
+          {
+            echo "flutter.sdk=$FLUTTER_ROOT"
+            echo "sdk.dir=$SDK_ROOT"
+            echo "ndk.dir=$NDK_DIR"
+          } > source/android/local.properties
+          {
+            echo "ANDROID_NDK_HOME=$NDK_DIR"
+            echo "ANDROID_NDK=$NDK_DIR"
+          } >> "$GITHUB_ENV"
+          chmod +x source/android/gradlew
+
+      - name: Run Android unit tests, native registry test, and lint
         working-directory: source/android
-        run: ./gradlew :app:testDebugUnitTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug --no-daemon
 
   android-arm64:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'android-arm64' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - name: Validate source commit
         id: source
@@ -406,12 +437,13 @@ jobs:
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -425,6 +457,38 @@ jobs:
         working-directory: source
         run: flutter pub get
 
-      - name: Compile debug APK for ARM64
+      - name: Configure Android SDK and NDK paths
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.android/sdk}}"
+          NDK_DIR="$SDK_ROOT/ndk/28.2.13676358"
+          test -f "$NDK_DIR/source.properties"
+          {
+            echo "flutter.sdk=$FLUTTER_ROOT"
+            echo "sdk.dir=$SDK_ROOT"
+            echo "ndk.dir=$NDK_DIR"
+          } > source/android/local.properties
+          {
+            echo "ANDROID_NDK_HOME=$NDK_DIR"
+            echo "ANDROID_NDK=$NDK_DIR"
+          } >> "$GITHUB_ENV"
+          chmod +x source/android/gradlew
+
+      - name: Build debug APK including FFmpeg JNI
         working-directory: source
         run: flutter build apk --debug --target-platform android-arm64 --no-pub
+
+      - name: Verify FFmpeg JNI and license notices are packaged
+        working-directory: source/android
+        run: |
+          set -euo pipefail
+          APK="../build/app/outputs/flutter-apk/app-debug.apk"
+          test -f "$APK"
+          unzip -Z -1 "$APK" | grep -Fx "lib/arm64-v8a/libffmpegJNI.so"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/COPYING.LGPLv2.1"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/LICENSE-2.0.txt"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/THIRD_PARTY_NOTICES.txt"
+
+      - name: Run ReplayGain TagWriter six-fixture host tests
+        working-directory: source
+        run: bash android/app/src/test/cpp/run_replaygain_tag_writer_descriptor_test.sh
