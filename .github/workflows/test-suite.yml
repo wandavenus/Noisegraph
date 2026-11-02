@@ -16,6 +16,7 @@ jobs:
   flutter:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'flutter' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -44,6 +45,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -68,6 +70,7 @@ jobs:
   automix-dart:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'automix-dart' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -96,6 +99,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -153,6 +157,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Install Native Toolchain and ARM64 Emulation
@@ -181,13 +186,29 @@ jobs:
         working-directory: source/native_audio_runtime
         run: flutter pub get
 
+      - name: Analyze Native Runtime
+        working-directory: source/native_audio_runtime
+        run: flutter analyze --no-pub
+
       - name: Run Native Unit Tests
         working-directory: source/native_audio_runtime
-        run: flutter test test/native_audio_runtime_test.dart
+        run: flutter test --no-pub test/native_audio_runtime_test.dart
 
       - name: Run Performance Benchmarks
         working-directory: source/native_audio_runtime
-        run: flutter test test/native_benchmark.dart
+        run: flutter test --no-pub test/native_benchmark.dart
+
+      - name: Install Native Runtime Example Dependencies
+        working-directory: source/native_audio_runtime/example
+        run: flutter pub get
+
+      - name: Analyze Native Runtime Example
+        working-directory: source/native_audio_runtime/example
+        run: flutter analyze --no-pub
+
+      - name: Test Native Runtime Example
+        working-directory: source/native_audio_runtime/example
+        run: flutter test --no-pub
 
       - name: Build AutoMix C Suite (x86_64, ASan+UBSan)
         working-directory: source/native_audio_runtime
@@ -250,6 +271,7 @@ jobs:
   kotlin:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'kotlin' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -283,6 +305,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           add-job-summary: never
+          cache-provider: basic
 
       - name: Configure writable Android SDK root
         run: |
@@ -321,6 +344,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -334,13 +358,17 @@ jobs:
         working-directory: source
         run: flutter pub get
 
-      - name: Run Kotlin unit tests
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x source/android/gradlew
+
+      - name: Run Android unit tests, host tests, and lint
         working-directory: source/android
-        run: ./gradlew :app:testDebugUnitTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug :decoder-ffmpeg:testExtradataPadding --no-daemon
 
   android-arm64:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'android-arm64' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - name: Validate source commit
         id: source
@@ -374,6 +402,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           add-job-summary: never
+          cache-provider: basic
 
       - name: Configure writable Android SDK root
         run: |
@@ -412,6 +441,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -428,3 +458,14 @@ jobs:
       - name: Compile debug APK for ARM64
         working-directory: source
         run: flutter build apk --debug --target-platform android-arm64 --no-pub
+
+      - name: Verify FFmpeg JNI and license notices are packaged
+        working-directory: source
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-debug.apk"
+          test -f "$APK"
+          unzip -Z -1 "$APK" | grep -Fx "lib/arm64-v8a/libffmpegJNI.so"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/COPYING.LGPLv2.1"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/LICENSE-2.0.txt"
+          unzip -Z -1 "$APK" | grep -Fx "assets/licenses/THIRD_PARTY_NOTICES.txt"
