@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
-      contents: read
+      contents: write
     outputs:
       source_sha: ${{ steps.source.outputs.sha }}
 
@@ -225,33 +225,13 @@ jobs:
           unzip -Z -1 "$APK" | grep -Fx "assets/licenses/LICENSE-2.0.txt"
           unzip -Z -1 "$APK" | grep -Fx "assets/licenses/THIRD_PARTY_NOTICES.txt"
 
-      - name: Prepare APK artifact
+      - name: Prepare APK for draft release
         env:
           RUN_NUMBER: ${{ github.run_number }}
         run: |
           set -euo pipefail
           mkdir -p release
           cp "source/build/app/outputs/flutter-apk/app-release.apk" "release/Noisegraph-$RUN_NUMBER-arm64-v8a.apk"
-
-      - name: Upload signed APK artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: noisegraph-release-apk
-          path: release/Noisegraph-${{ github.run_number }}-arm64-v8a.apk
-          if-no-files-found: error
-          retention-days: 1
-
-  publish-draft:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download signed APK
-        uses: actions/download-artifact@v8
-        with:
-          name: noisegraph-release-apk
-          path: release
 
       - name: Upload APK to Draft Release
         uses: softprops/action-gh-release@v3
@@ -262,6 +242,6 @@ jobs:
           body: |
             Automated release build for Noisegraph.
 
-            Source revision: ${{ needs.build.outputs.source_sha }}
+            Source revision: ${{ steps.source.outputs.sha }}
 
           files: release/Noisegraph-${{ github.run_number }}-arm64-v8a.apk
