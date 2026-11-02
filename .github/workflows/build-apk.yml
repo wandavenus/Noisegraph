@@ -68,6 +68,15 @@ jobs:
           echo "root=$SDK_ROOT" >> "$GITHUB_OUTPUT"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
 
+      - name: Cache Android SDK build targets
+        uses: actions/cache@v6
+        with:
+          path: |
+            ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
+            ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
+            ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
+          key: android-sdk-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-v1
+
       - name: Cache pinned Android NDK
         id: android-ndk-cache
         uses: actions/cache@v6
@@ -104,8 +113,20 @@ jobs:
           set -euo pipefail
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(command -v sdkmanager)"; fi
-          "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1"
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(command -v sdkmanager || true)"; fi
+          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
+            echo "::error::Android SDK Manager was not found on the runner."
+            exit 1
+          fi
+
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" --channel=3 \
+            "platforms;android-37.0" \
+            "build-tools;37.0.0" \
+            "cmake;3.22.1"
+
+          test -f "$SDK_ROOT/platforms/android-37.0/android.jar"
+          test -x "$SDK_ROOT/build-tools/37.0.0/aapt2"
+          test -x "$SDK_ROOT/cmake/3.22.1/bin/cmake"
 
       - name: Set up Java
         uses: actions/setup-java@v6
