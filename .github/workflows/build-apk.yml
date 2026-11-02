@@ -221,7 +221,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  publish-release:
+  publish-draft:
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -233,12 +233,12 @@ jobs:
           name: noisegraph-release-apk
           path: release
 
-      - name: Publish APK to GitHub Release
+      - name: Upload APK to Draft Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: build-${{ github.run_id }}
           name: "Android Build #${{ github.run_number }}"
-          draft: false
+          draft: true
           body: |
             Automated release build for Noisegraph.
 
