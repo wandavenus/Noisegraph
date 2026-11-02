@@ -170,7 +170,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build gcc-aarch64-linux-gnu qemu-user-static ccache
+          sudo apt-get install -y clang libclang-dev cmake ninja-build gcc-aarch64-linux-gnu qemu-user-static ccache
       - name: Cache native C compiler objects
         uses: actions/cache@v6
         with:
@@ -192,9 +192,44 @@ jobs:
         working-directory: source/native_audio_runtime
         run: flutter pub get
 
-      - name: Run Native Unit Tests
+      - name: Verify generated FFI binding is up to date
         working-directory: source/native_audio_runtime
-        run: flutter test test/native_audio_runtime_test.dart
+        run: |
+          set -euo pipefail
+          dart run tool/ffigen.dart
+          git -C "$GITHUB_WORKSPACE/source" diff --exit-code -- native_audio_runtime/lib/native_audio_runtime_bindings_generated.dart
+
+      - name: Analyze and test native_audio_runtime package
+        working-directory: source/native_audio_runtime
+        run: |
+          flutter analyze --no-pub
+          flutter test --no-pub
+
+      - name: Install native_audio_runtime example dependencies
+        working-directory: source/native_audio_runtime/example
+        run: flutter pub get
+
+      - name: Analyze and test native_audio_runtime example
+        working-directory: source/native_audio_runtime/example
+        run: |
+          flutter analyze --no-pub
+          flutter test --no-pub
+
+      - name: Run native_audio_runtime lifecycle and crossfeed C tests
+        working-directory: source/native_audio_runtime
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1
+        run: |
+          set -euo pipefail
+          gcc -D_POSIX_C_SOURCE=200809L -DNAR_NATIVE_RUNTIME_TEST_HOOKS \
+            -std=c11 -O1 -g -fsanitize=address,undefined \
+            -fno-omit-frame-pointer -Isrc \
+            test/native_runtime_lifecycle_c_test.c \
+            src/native_audio_runtime.c src/dsp_pipeline.c src/audio_buffer.c \
+            src/biquad_filter.c src/crossfeed_processor.c \
+            -lm -pthread -o /tmp/native_runtime_lifecycle_c_test
+          /tmp/native_runtime_lifecycle_c_test
 
       - name: Run Performance Benchmarks
         working-directory: source/native_audio_runtime
@@ -206,7 +241,7 @@ jobs:
           set -euo pipefail
           C_FLAGS=(
             -std=c11 -O1 -g -fno-omit-frame-pointer
-            -fsanitize=address,undefined -Wall -Wextra -pthread
+            "-fsanitize=address,undefined" -Wall -Wextra -pthread
             -I src
           )
           C_SOURCES=(
@@ -317,17 +352,17 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-36
+            ${{ steps.android-sdk.outputs.root }}/platforms/android-37
             ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358-v2
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37-bt36-cmake3.22.1-ndk28.2.13676358-v2
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -366,7 +401,7 @@ jobs:
 
       - name: Run Android unit tests, native registry test, and lint
         working-directory: source/android
-        run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug --no-daemon
+        run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug :decoder-ffmpeg:testExtradataPadding --no-daemon
 
   android-arm64:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'android-arm64' }}
@@ -427,17 +462,17 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-36
+            ${{ steps.android-sdk.outputs.root }}/platforms/android-37
             ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358-v2
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37-bt36-cmake3.22.1-ndk28.2.13676358-v2
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
