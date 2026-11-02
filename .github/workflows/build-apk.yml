@@ -242,6 +242,6 @@ jobs:
           body: |
             Automated release build for Noisegraph.
 
-            Source revision: ${{ needs.build.outputs.source_sha }}
+            Source revision: ${{ steps.source.outputs.sha }}
 
           files: release/Noisegraph-${{ github.run_number }}-arm64-v8a.apk
