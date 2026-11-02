@@ -99,6 +99,14 @@ jobs:
           set -euo pipefail
           GITHUB_WORKSPACE="$GITHUB_WORKSPACE/source" bash scripts/ci/install-android-ndk.sh
 
+      - name: Install Dump Android SDK build targets
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(command -v sdkmanager)"; fi
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1"
+
       - name: Set up Java
         uses: actions/setup-java@v6
         with:

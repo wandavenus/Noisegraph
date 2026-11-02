@@ -235,7 +235,7 @@ jobs:
           set -euo pipefail
           C_FLAGS=(
             -std=c11 -O1 -g -fno-omit-frame-pointer
-            -fsanitize=address,undefined -Wall -Wextra -pthread
+            "-fsanitize=address,undefined" -Wall -Wextra -pthread
             -I src
           )
           C_SOURCES=(
@@ -347,17 +347,17 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-36
+            ${{ steps.android-sdk.outputs.root }}/platforms/android-37
             ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358-v2
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37-bt36-cmake3.22.1-ndk28.2.13676358-v2
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -444,17 +444,17 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-36
+            ${{ steps.android-sdk.outputs.root }}/platforms/android-37
             ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api36-bt36-cmake3.22.1-ndk28.2.13676358-v2
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37-bt36-cmake3.22.1-ndk28.2.13676358-v2
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
