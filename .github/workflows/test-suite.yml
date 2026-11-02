@@ -347,17 +347,32 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-37
-            ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
+            ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
+            ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37-bt36-cmake3.22.1-ndk28.2.13676358-v2
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk28.2.13676358-v3
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          set -euo pipefail
+          if ! command -v sdkmanager >/dev/null 2>&1; then
+            echo "::error::Android SDK Manager was not found on the runner."
+            exit 1
+          fi
+
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --channel=3 \
+            "platforms;android-37.0" \
+            "build-tools;37.0.0" \
+            "cmake;3.22.1" \
+            "ndk;28.2.13676358"
+
+          test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
+          test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
+          test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
+          test -f "$ANDROID_SDK_ROOT/ndk/28.2.13676358/source.properties"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -444,17 +459,32 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-37
-            ${{ steps.android-sdk.outputs.root }}/build-tools/36.0.0
+            ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
+            ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
             ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
             ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37-bt36-cmake3.22.1-ndk28.2.13676358-v2
+          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk28.2.13676358-v3
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          set -euo pipefail
+          if ! command -v sdkmanager >/dev/null 2>&1; then
+            echo "::error::Android SDK Manager was not found on the runner."
+            exit 1
+          fi
+
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --channel=3 \
+            "platforms;android-37.0" \
+            "build-tools;37.0.0" \
+            "cmake;3.22.1" \
+            "ndk;28.2.13676358"
+
+          test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
+          test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
+          test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
+          test -f "$ANDROID_SDK_ROOT/ndk/28.2.13676358/source.properties"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
