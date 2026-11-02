@@ -45,7 +45,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -99,7 +98,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -157,7 +155,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Install Native Toolchain and ARM64 Emulation
@@ -378,7 +375,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -490,7 +486,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version-file: source/pubspec.yaml
           cache: true
 
       - name: Cache Flutter Pub dependencies
