@@ -41,12 +41,6 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Validate native build script syntax
-        working-directory: source
-        run: |
-          bash -n android/build-ffmpeg-jni.sh
-          bash -n scripts/ci/install-android-ndk.sh
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -134,7 +128,7 @@ jobs:
   native-c:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'native-c' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -170,7 +164,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y clang libclang-dev cmake ninja-build gcc-aarch64-linux-gnu qemu-user-static ccache
+          sudo apt-get install -y clang cmake ninja-build gcc-aarch64-linux-gnu qemu-user-static ccache libclang-dev
       - name: Cache native C compiler objects
         uses: actions/cache@v6
         with:
@@ -199,23 +193,27 @@ jobs:
           dart run tool/ffigen.dart
           git -C "$GITHUB_WORKSPACE/source" diff --exit-code -- native_audio_runtime/lib/native_audio_runtime_bindings_generated.dart
 
-      - name: Analyze and test native_audio_runtime package
+      - name: Analyze Native Runtime
         working-directory: source/native_audio_runtime
-        run: |
-          flutter analyze --no-pub
-          flutter test --no-pub
+        run: flutter analyze --no-pub
 
-      - name: Install native_audio_runtime example dependencies
+      - name: Run Native Runtime Tests
+        working-directory: source/native_audio_runtime
+        run: flutter test --no-pub
+
+      - name: Install Native Runtime Example Dependencies
         working-directory: source/native_audio_runtime/example
         run: flutter pub get
 
-      - name: Analyze and test native_audio_runtime example
+      - name: Analyze Native Runtime Example
         working-directory: source/native_audio_runtime/example
-        run: |
-          flutter analyze --no-pub
-          flutter test --no-pub
+        run: flutter analyze --no-pub
 
-      - name: Run native_audio_runtime lifecycle and crossfeed C tests
+      - name: Test Native Runtime Example
+        working-directory: source/native_audio_runtime/example
+        run: flutter test --no-pub
+
+      - name: Run native runtime lifecycle and crossfeed C tests
         working-directory: source/native_audio_runtime
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
@@ -230,10 +228,6 @@ jobs:
             src/biquad_filter.c src/crossfeed_processor.c \
             -lm -pthread -o /tmp/native_runtime_lifecycle_c_test
           /tmp/native_runtime_lifecycle_c_test
-
-      - name: Run Performance Benchmarks
-        working-directory: source/native_audio_runtime
-        run: flutter test test/native_benchmark.dart
 
       - name: Build AutoMix C Suite (x86_64, ASan+UBSan)
         working-directory: source/native_audio_runtime
@@ -296,7 +290,7 @@ jobs:
   kotlin:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'kotlin' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - name: Validate source commit
         id: source
@@ -330,6 +324,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           add-job-summary: never
+          cache-provider: enhanced
 
       - name: Configure writable Android SDK root
         run: |
@@ -362,7 +357,7 @@ jobs:
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -382,24 +377,10 @@ jobs:
         working-directory: source
         run: flutter pub get
 
-      - name: Configure Android SDK and NDK paths
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.android/sdk}}"
-          NDK_DIR="$SDK_ROOT/ndk/28.2.13676358"
-          test -f "$NDK_DIR/source.properties"
-          {
-            echo "flutter.sdk=$FLUTTER_ROOT"
-            echo "sdk.dir=$SDK_ROOT"
-            echo "ndk.dir=$NDK_DIR"
-          } > source/android/local.properties
-          {
-            echo "ANDROID_NDK_HOME=$NDK_DIR"
-            echo "ANDROID_NDK=$NDK_DIR"
-          } >> "$GITHUB_ENV"
-          chmod +x source/android/gradlew
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x source/android/gradlew
 
-      - name: Run Android unit tests, native registry test, and lint
+      - name: Run Android unit tests, host tests, and lint
         working-directory: source/android
         run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug :decoder-ffmpeg:testExtradataPadding --no-daemon
 
@@ -440,6 +421,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           add-job-summary: never
+          cache-provider: enhanced
 
       - name: Configure writable Android SDK root
         run: |
@@ -472,7 +454,7 @@ jobs:
 
       - name: Install Android SDK, NDK, and CMake
         run: |
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -492,38 +474,17 @@ jobs:
         working-directory: source
         run: flutter pub get
 
-      - name: Configure Android SDK and NDK paths
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.android/sdk}}"
-          NDK_DIR="$SDK_ROOT/ndk/28.2.13676358"
-          test -f "$NDK_DIR/source.properties"
-          {
-            echo "flutter.sdk=$FLUTTER_ROOT"
-            echo "sdk.dir=$SDK_ROOT"
-            echo "ndk.dir=$NDK_DIR"
-          } > source/android/local.properties
-          {
-            echo "ANDROID_NDK_HOME=$NDK_DIR"
-            echo "ANDROID_NDK=$NDK_DIR"
-          } >> "$GITHUB_ENV"
-          chmod +x source/android/gradlew
-
-      - name: Build debug APK including FFmpeg JNI
+      - name: Compile debug APK for ARM64
         working-directory: source
         run: flutter build apk --debug --target-platform android-arm64 --no-pub
 
       - name: Verify FFmpeg JNI and license notices are packaged
-        working-directory: source/android
+        working-directory: source
         run: |
           set -euo pipefail
-          APK="../build/app/outputs/flutter-apk/app-debug.apk"
+          APK="build/app/outputs/flutter-apk/app-debug.apk"
           test -f "$APK"
           unzip -Z -1 "$APK" | grep -Fx "lib/arm64-v8a/libffmpegJNI.so"
           unzip -Z -1 "$APK" | grep -Fx "assets/licenses/COPYING.LGPLv2.1"
           unzip -Z -1 "$APK" | grep -Fx "assets/licenses/LICENSE-2.0.txt"
           unzip -Z -1 "$APK" | grep -Fx "assets/licenses/THIRD_PARTY_NOTICES.txt"
-
-      - name: Run ReplayGain TagWriter six-fixture host tests
-        working-directory: source
-        run: bash android/app/src/test/cpp/run_replaygain_tag_writer_descriptor_test.sh

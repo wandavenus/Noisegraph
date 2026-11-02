@@ -12,7 +12,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: android-apk-builder
@@ -21,6 +21,12 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
+
     steps:
       - name: Resolve source commit
         id: source
@@ -29,12 +35,13 @@ jobs:
           MANUAL_SHA: ${{ inputs.source_sha }}
         run: |
           set -euo pipefail
-          SHA="${EVENT_SHA:-$MANUAL_SHA}"
+          SHA="${EVENT_SHA:-${MANUAL_SHA}}"
           if [[ ! "$SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "::error::Source commit SHA is missing or is not a full 40-character commit SHA."
+            echo "::error::Source commit SHA is missing or invalid."
             exit 1
           fi
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Building Dump commit: $SHA" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout private source
         uses: actions/checkout@v7
@@ -44,16 +51,15 @@ jobs:
           token: ${{ secrets.SOURCE_READ_TOKEN }}
           path: source
           persist-credentials: false
-          # The build targets an explicit commit SHA and does not use source history.
           fetch-depth: 1
 
-      - name: Validate native build script syntax
+      - name: Validate build scripts
         working-directory: source
         run: |
+          set -euo pipefail
           bash -n android/build-ffmpeg-jni.sh
           bash -n scripts/ci/install-android-ndk.sh
 
-      # Resolve the Android SDK root once so the NDK cache and installer use the same path.
       - name: Resolve Android SDK root
         id: android-sdk
         run: |
@@ -62,8 +68,6 @@ jobs:
           echo "root=$SDK_ROOT" >> "$GITHUB_OUTPUT"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
 
-      # Cache the exact pinned NDK; a cache hit avoids downloading and unpacking it
-      # on every fresh GitHub-hosted runner. The version is part of the cache key.
       - name: Cache pinned Android NDK
         id: android-ndk-cache
         uses: actions/cache@v6
@@ -71,9 +75,6 @@ jobs:
           path: ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
           key: android-ndk-${{ runner.os }}-${{ runner.arch }}-28.2.13676358
 
-      # Reuse CMake/Ninja build trees and FetchContent sources for libebur128,
-      # TagLib, and Signalsmith. On source/config changes, restore the last
-      # compatible tree so CMake/Ninja can regenerate and rebuild changed inputs.
       - name: Cache native CMake and Ninja build
         id: native-cmake-cache
         uses: actions/cache@v6
@@ -88,18 +89,14 @@ jobs:
         uses: actions/cache@v6
         with:
           path: source/android/decoder-ffmpeg/.ffmpeg-build
-          key: ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-${{ hashFiles('source/android/build-ffmpeg-jni.sh', 'source/android/decoder-ffmpeg/src/main/jni/ffmpeg_jni.cc', 'source/android/decoder-ffmpeg/src/main/jni/extradata_utils.h') }}
+          key: ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-${{ hashFiles('source/android/build-ffmpeg-jni.sh', 'source/android/decoder-ffmpeg/src/main/jni/ffmpeg_jni.cc') }}
           restore-keys: |
             ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-
-
-      # Keep the NDK at the runner's Android SDK path. FFmpeg's configuration
-      # fingerprint includes the compiler path, and CMake caches absolute NDK paths.
 
       - name: Install pinned Android NDK
         working-directory: source
         run: |
           set -euo pipefail
-          # The Dump installer writes local.properties relative to its checkout.
           GITHUB_WORKSPACE="$GITHUB_WORKSPACE/source" bash scripts/ci/install-android-ndk.sh
 
       - name: Install Dump Android SDK build targets
@@ -120,6 +117,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           add-job-summary: never
+          cache-provider: enhanced
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -127,23 +125,14 @@ jobs:
           channel: stable
           flutter-version-file: source/pubspec.yaml
           cache: true
+
       - name: Install dependencies
         working-directory: source
         run: flutter pub get
 
-      - name: Configure Android SDK and NDK paths
+      - name: Analyze Dart and Flutter code
         working-directory: source
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
-          NDK_DIR="$SDK_ROOT/ndk/28.2.13676358"
-          test -f "$NDK_DIR/source.properties"
-          {
-            echo "flutter.sdk=$FLUTTER_ROOT"
-            echo "sdk.dir=$SDK_ROOT"
-            echo "ndk.dir=$NDK_DIR"
-          } > android/local.properties
-          chmod +x android/gradlew
+        run: flutter analyze --no-pub --no-fatal-warnings --no-fatal-infos
 
       - name: Set Android version
         working-directory: source
@@ -189,10 +178,6 @@ jobs:
             -noprompt >/dev/null 2>&1
           rm -f /tmp/release-key-validation.jks
 
-      - name: Build FFmpeg JNI library
-        working-directory: source/android
-        run: ./gradlew :decoder-ffmpeg:buildFfmpegJni --no-daemon
-
       - name: Build release APK
         working-directory: source
         env:
@@ -220,12 +205,33 @@ jobs:
           unzip -Z -1 "$APK" | grep -Fx "assets/licenses/LICENSE-2.0.txt"
           unzip -Z -1 "$APK" | grep -Fx "assets/licenses/THIRD_PARTY_NOTICES.txt"
 
-      - name: Prepare APK
+      - name: Prepare APK artifact
         env:
           RUN_NUMBER: ${{ github.run_number }}
         run: |
+          set -euo pipefail
           mkdir -p release
           cp "source/build/app/outputs/flutter-apk/app-release.apk" "release/Noisegraph-$RUN_NUMBER-arm64-v8a.apk"
+
+      - name: Upload signed APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: noisegraph-release-apk
+          path: release/Noisegraph-${{ github.run_number }}-arm64-v8a.apk
+          if-no-files-found: error
+          retention-days: 1
+
+  publish-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download signed APK
+        uses: actions/download-artifact@v8
+        with:
+          name: noisegraph-release-apk
+          path: release
 
       - name: Publish APK to GitHub Release
         uses: softprops/action-gh-release@v3
@@ -236,6 +242,6 @@ jobs:
           body: |
             Automated release build for Noisegraph.
 
-            Source revision: `${{ steps.source.outputs.sha }}`
+            Source revision: ${{ needs.build.outputs.source_sha }}
 
           files: release/Noisegraph-${{ github.run_number }}-arm64-v8a.apk
