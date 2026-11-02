@@ -161,7 +161,9 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build gcc-aarch64-linux-gnu qemu-user-static ccache libclang-dev
+          sudo apt-get install -y clang cmake ninja-build gcc-aarch64-linux-gnu qemu-user-binfmt ccache libclang-dev
+          command -v qemu-aarch64-static
+          command -v ccache
       - name: Cache native C compiler objects
         uses: actions/cache@v6
         with:
@@ -282,7 +284,12 @@ jobs:
         run: qemu-aarch64-static -L /usr/aarch64-linux-gnu /tmp/automix_native_c_test_arm64
       - name: Report native compiler cache
         if: always()
-        run: ccache --show-stats
+        run: |
+          if command -v ccache >/dev/null 2>&1; then
+            ccache --show-stats
+          else
+            echo "ccache was not installed; compiler-cache statistics are unavailable."
+          fi
 
   kotlin:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'kotlin' }}
