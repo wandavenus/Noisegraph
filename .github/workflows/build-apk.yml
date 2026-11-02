@@ -189,6 +189,9 @@ jobs:
       - name: Build release APK
         working-directory: source
         env:
+          GRADLE_OPTS: >-
+            -Dorg.gradle.project.filesystem-roots=${{ github.workspace }}/source
+            -Dorg.gradle.project.filesystem-scheme=org-dartlang-dump
           ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/source/android/app/release-keystore.jks
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -201,6 +204,10 @@ jobs:
             --no-pub \
             --obfuscate \
             --split-debug-info=build/debug-info
+
+      - name: Verify release ELF hardening
+        working-directory: source
+        run: bash scripts/ci/verify-android-release-elf.sh build/app/outputs/flutter-apk/app-release.apk
 
       - name: Verify FFmpeg JNI and license notices are packaged
         working-directory: source
