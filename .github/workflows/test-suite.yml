@@ -223,7 +223,7 @@ jobs:
             -fno-omit-frame-pointer -Isrc \
             test/native_runtime_lifecycle_c_test.c \
             src/native_audio_runtime.c src/dsp_pipeline.c src/audio_buffer.c \
-            src/biquad_filter.c src/crossfeed_processor.c \
+            src/biquad_filter.c src/crossfeed_processor.c src/neon_kernels.S \
             -lm -pthread -o /tmp/native_runtime_lifecycle_c_test
           /tmp/native_runtime_lifecycle_c_test
 
@@ -326,7 +326,7 @@ jobs:
             -fno-omit-frame-pointer -Isrc \
             test/native_runtime_lifecycle_c_test.c \
             src/native_audio_runtime.c src/dsp_pipeline.c src/audio_buffer.c \
-            src/biquad_filter.c src/crossfeed_processor.c \
+            src/biquad_filter.c src/crossfeed_processor.c src/neon_kernels.S \
             -lm -pthread -o /tmp/native_runtime_lifecycle_c_test
           /tmp/native_runtime_lifecycle_c_test
 
