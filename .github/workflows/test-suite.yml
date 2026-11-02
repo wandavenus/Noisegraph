@@ -15,7 +15,7 @@ concurrency:
 jobs:
   flutter:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'flutter' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
       - name: Validate source commit
@@ -68,7 +68,7 @@ jobs:
 
   automix-dart:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'automix-dart' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
       - name: Validate source commit
@@ -125,7 +125,7 @@ jobs:
 
   native-c:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'native-c' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
       - name: Validate source commit
@@ -286,7 +286,7 @@ jobs:
 
   kotlin:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'kotlin' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
       - name: Validate source commit
@@ -397,7 +397,7 @@ jobs:
 
   android-arm64:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'android-arm64' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 90
     steps:
       - name: Validate source commit
