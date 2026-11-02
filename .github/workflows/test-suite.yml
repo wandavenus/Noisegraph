@@ -161,8 +161,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build gcc-aarch64-linux-gnu qemu-user-binfmt ccache libclang-dev
-          command -v qemu-aarch64
+          sudo apt-get install -y clang cmake ninja-build ccache libclang-dev
           command -v ccache
       - name: Cache native C compiler objects
         uses: actions/cache@v6
@@ -257,12 +256,87 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: /tmp/automix_native_c_test
 
-      - name: Build AutoMix C Suite (arm64 + NEON)
+      - name: Report native compiler cache
+        if: always()
+        run: |
+          if command -v ccache >/dev/null 2>&1; then
+            ccache --show-stats
+          else
+            echo "ccache was not installed; compiler-cache statistics are unavailable."
+          fi
+
+  native-arm64:
+    name: Native ARM64 C and NEON
+    if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'native-c' }}
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 45
+    steps:
+      - name: Validate source commit
+        id: source
+        env:
+          SOURCE_SHA: ${{ github.event.client_payload.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
+            exit 1
+          fi
+          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Running native ARM64 C/NEON tests for Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          test "$(uname -m)" = "aarch64"
+
+      - name: Checkout private Dump source
+        uses: actions/checkout@v7
+        with:
+          repository: wandavenus/Dump
+          ref: ${{ steps.source.outputs.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
+          path: source
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Install native ARM64 C toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential ccache
+          command -v gcc
+          command -v ccache
+
+      - name: Cache native ARM64 compiler objects
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-arm64-v1-${{ hashFiles('source/native_audio_runtime/src/**/*.c', 'source/native_audio_runtime/src/**/*.h', 'source/native_audio_runtime/src/**/*.S', 'source/native_audio_runtime/test/automix_native_c_test.c') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-arm64-v1-
+
+      - name: Configure native ARM64 compiler cache
+        run: ccache --max-size=1G
+
+      - name: Run native runtime lifecycle and crossfeed C tests
+        working-directory: source/native_audio_runtime
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          set -euo pipefail
+          gcc -D_POSIX_C_SOURCE=200809L -DNAR_NATIVE_RUNTIME_TEST_HOOKS \
+            -std=c11 -O1 -g -fsanitize=address,undefined \
+            -fno-omit-frame-pointer -Isrc \
+            test/native_runtime_lifecycle_c_test.c \
+            src/native_audio_runtime.c src/dsp_pipeline.c src/audio_buffer.c \
+            src/biquad_filter.c src/crossfeed_processor.c \
+            -lm -pthread -o /tmp/native_runtime_lifecycle_c_test
+          /tmp/native_runtime_lifecycle_c_test
+
+      - name: Build AutoMix C Suite with native ARM64 NEON
         working-directory: source/native_audio_runtime
         run: |
           set -euo pipefail
           C_FLAGS=(
-            -O2 -g -Wall -Wextra -pthread
+            -std=c11 -O1 -g -fno-omit-frame-pointer
+            -fsanitize=address,undefined -Wall -Wextra -pthread
             -I src
           )
           C_SOURCES=(
@@ -275,21 +349,24 @@ jobs:
           OBJECTS=()
           for source_file in "${C_SOURCES[@]}"; do
             object_file="/tmp/native-arm64-$(basename "${source_file%.*}").o"
-            ccache aarch64-linux-gnu-gcc "${C_FLAGS[@]}" -c "$source_file" -o "$object_file"
+            ccache gcc "${C_FLAGS[@]}" -c "$source_file" -o "$object_file"
             OBJECTS+=("$object_file")
           done
-          aarch64-linux-gnu-gcc "${C_FLAGS[@]}" "${OBJECTS[@]}" -lm -o /tmp/automix_native_c_test_arm64
+          ccache gcc "${C_FLAGS[@]}" "${OBJECTS[@]}" -lm -o /tmp/automix_native_c_test_arm64
 
-      - name: Run AutoMix C Suite (arm64 under qemu)
-        run: qemu-aarch64 -L /usr/aarch64-linux-gnu /tmp/automix_native_c_test_arm64
-      - name: Report native compiler cache
+      - name: Run AutoMix C Suite on native ARM64
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: /tmp/automix_native_c_test_arm64
+
+      - name: Run NEON differential regression natively
+        working-directory: source
+        run: bash tools/neon_diff_regression.sh
+
+      - name: Report native ARM64 compiler cache
         if: always()
-        run: |
-          if command -v ccache >/dev/null 2>&1; then
-            ccache --show-stats
-          else
-            echo "ccache was not installed; compiler-cache statistics are unavailable."
-          fi
+        run: ccache --show-stats
 
   kotlin:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'kotlin' }}
