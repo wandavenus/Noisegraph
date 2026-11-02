@@ -162,7 +162,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y clang cmake ninja-build gcc-aarch64-linux-gnu qemu-user-binfmt ccache libclang-dev
-          command -v qemu-aarch64-static
+          command -v qemu-aarch64
           command -v ccache
       - name: Cache native C compiler objects
         uses: actions/cache@v6
@@ -281,7 +281,7 @@ jobs:
           aarch64-linux-gnu-gcc "${C_FLAGS[@]}" "${OBJECTS[@]}" -lm -o /tmp/automix_native_c_test_arm64
 
       - name: Run AutoMix C Suite (arm64 under qemu)
-        run: qemu-aarch64-static -L /usr/aarch64-linux-gnu /tmp/automix_native_c_test_arm64
+        run: qemu-aarch64 -L /usr/aarch64-linux-gnu /tmp/automix_native_c_test_arm64
       - name: Report native compiler cache
         if: always()
         run: |
