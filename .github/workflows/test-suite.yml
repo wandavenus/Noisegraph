@@ -324,7 +324,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           add-job-summary: never
-          cache-provider: basic
+          cache-provider: enhanced
 
       - name: Configure writable Android SDK root
         run: |
@@ -421,7 +421,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           add-job-summary: never
-          cache-provider: basic
+          cache-provider: enhanced
 
       - name: Configure writable Android SDK root
         run: |
