@@ -44,8 +44,10 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.50.0-0.3.pre'
+          channel: beta
           cache: true
+          pub-cache: true
 
       - name: Cache Flutter Pub dependencies
         uses: actions/cache@v6
@@ -97,8 +99,10 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.50.0-0.3.pre'
+          channel: beta
           cache: true
+          pub-cache: true
 
       - name: Cache Flutter Pub dependencies
         uses: actions/cache@v6
@@ -154,8 +158,10 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.50.0-0.3.pre'
+          channel: beta
           cache: true
+          pub-cache: true
 
       - name: Install Native Toolchain and ARM64 Emulation
         run: |
@@ -458,7 +464,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.50.0-0.3.pre'
+          channel: beta
           cache: true
 
       - name: Cache Flutter Pub dependencies
@@ -569,7 +576,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.50.0-0.3.pre'
+          channel: beta
           cache: true
 
       - name: Cache Flutter Pub dependencies
