@@ -62,7 +62,7 @@ jobs:
 
       - name: Analyze Dart and Flutter code
         working-directory: source
-        run: flutter analyze --no-pub --no-fatal-warnings --no-fatal-infos
+        run: flutter analyze
 
       - name: Run Flutter tests
         working-directory: source
