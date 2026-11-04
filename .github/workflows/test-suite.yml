@@ -422,8 +422,11 @@ jobs:
             echo "ANDROID_HOME=$SDK_ROOT"
             echo "ANDROID_SDK_ROOT=$SDK_ROOT"
           } >> "$GITHUB_ENV"
-      - name: Set up Android SDK
+      - name: Set up Android SDK licenses
         uses: android-actions/setup-android@v4
+        with:
+          cmdline-tools-version: 14742923
+          packages: ''
       - name: Resolve Android SDK root
         id: android-sdk
         run: |
@@ -442,24 +445,29 @@ jobs:
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Install Android SDK, NDK, and CMake
+      - name: Install Android CLI and SDK packages
         run: |
           set -euo pipefail
-          if ! command -v sdkmanager >/dev/null 2>&1; then
-            echo "::error::Android SDK Manager was not found on the runner."
-            exit 1
-          fi
+          ANDROID_CLI="$RUNNER_TEMP/android"
+          curl --fail --location --silent --show-error \
+            https://dl.google.com/android/cli/latest/linux_x86_64/android \
+            --output "$ANDROID_CLI"
+          chmod +x "$ANDROID_CLI"
+          echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
 
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --channel=3 \
-            "platforms;android-37.0" \
-            "build-tools;37.0.0" \
-            "cmake;3.22.1" \
-            "ndk;28.2.13676358"
+          "$ANDROID_CLI" --sdk="$ANDROID_SDK_ROOT" sdk install --canary \
+            platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1 \
+            ndk/28.2.13676358
 
+          NDK_DIR="$ANDROID_SDK_ROOT/ndk/28.2.13676358"
           test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
           test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
           test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
-          test -f "$ANDROID_SDK_ROOT/ndk/28.2.13676358/source.properties"
+          test -f "$NDK_DIR/source.properties"
+          {
+            echo "ANDROID_NDK_HOME=$NDK_DIR"
+            echo "ANDROID_NDK=$NDK_DIR"
+          } >> "$GITHUB_ENV"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -484,7 +492,20 @@ jobs:
 
       - name: Run Android unit tests, host tests, and lint
         working-directory: source/android
-        run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug :decoder-ffmpeg:testExtradataPadding --no-daemon
+        run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug :decoder-ffmpeg:testExtradataPadding --no-daemon --warning-mode=all
+
+      - name: Upload Android verification reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-verification-reports
+          path: |
+            source/android/app/build/reports/lint-results-debug.html
+            source/android/app/build/reports/lint-results-debug.xml
+            source/android/app/build/reports/lint-results-debug.sarif
+            source/android/build/reports/problems/problems-report.html
+          if-no-files-found: warn
+          retention-days: 14
 
   android-arm64:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'android-arm64' }}
@@ -534,8 +555,11 @@ jobs:
             echo "ANDROID_HOME=$SDK_ROOT"
             echo "ANDROID_SDK_ROOT=$SDK_ROOT"
           } >> "$GITHUB_ENV"
-      - name: Set up Android SDK
+      - name: Set up Android SDK licenses
         uses: android-actions/setup-android@v4
+        with:
+          cmdline-tools-version: 14742923
+          packages: ''
       - name: Resolve Android SDK root
         id: android-sdk
         run: |
@@ -554,24 +578,29 @@ jobs:
           restore-keys: |
             android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Install Android SDK, NDK, and CMake
+      - name: Install Android CLI and SDK packages
         run: |
           set -euo pipefail
-          if ! command -v sdkmanager >/dev/null 2>&1; then
-            echo "::error::Android SDK Manager was not found on the runner."
-            exit 1
-          fi
+          ANDROID_CLI="$RUNNER_TEMP/android"
+          curl --fail --location --silent --show-error \
+            https://dl.google.com/android/cli/latest/linux_x86_64/android \
+            --output "$ANDROID_CLI"
+          chmod +x "$ANDROID_CLI"
+          echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
 
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --channel=3 \
-            "platforms;android-37.0" \
-            "build-tools;37.0.0" \
-            "cmake;3.22.1" \
-            "ndk;28.2.13676358"
+          "$ANDROID_CLI" --sdk="$ANDROID_SDK_ROOT" sdk install --canary \
+            platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1 \
+            ndk/28.2.13676358
 
+          NDK_DIR="$ANDROID_SDK_ROOT/ndk/28.2.13676358"
           test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
           test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
           test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
-          test -f "$ANDROID_SDK_ROOT/ndk/28.2.13676358/source.properties"
+          test -f "$NDK_DIR/source.properties"
+          {
+            echo "ANDROID_NDK_HOME=$NDK_DIR"
+            echo "ANDROID_NDK=$NDK_DIR"
+          } >> "$GITHUB_ENV"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
