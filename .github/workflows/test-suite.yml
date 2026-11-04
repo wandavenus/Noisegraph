@@ -500,10 +500,10 @@ jobs:
         with:
           name: android-verification-reports
           path: |
-            source/android/app/build/reports/lint-results-debug.html
-            source/android/app/build/reports/lint-results-debug.xml
-            source/android/app/build/reports/lint-results-debug.sarif
-            source/android/build/reports/problems/problems-report.html
+            source/build/app/reports/lint-results-debug.html
+            source/build/app/reports/lint-results-debug.xml
+            source/build/app/reports/lint-results-debug.sarif
+            source/build/reports/problems/problems-report.html
           if-no-files-found: warn
           retention-days: 14
 
