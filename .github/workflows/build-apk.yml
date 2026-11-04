@@ -66,7 +66,27 @@ jobs:
           set -euo pipefail
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           echo "root=$SDK_ROOT" >> "$GITHUB_OUTPUT"
-          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          {
+            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
+            echo "ANDROID_HOME=$SDK_ROOT"
+          } >> "$GITHUB_ENV"
+
+      - name: Set up Android SDK licenses
+        uses: android-actions/setup-android@v4
+        with:
+          cmdline-tools-version: 14742923
+          packages: ''
+
+      - name: Install Android CLI
+        run: |
+          set -euo pipefail
+          ANDROID_CLI="$RUNNER_TEMP/android"
+          curl --fail --location --silent --show-error \
+            https://dl.google.com/android/cli/latest/linux_x86_64/android \
+            --output "$ANDROID_CLI"
+          chmod +x "$ANDROID_CLI"
+          echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
+          "$ANDROID_CLI" --version
 
 
       - name: Cache pinned Android NDK
@@ -104,17 +124,8 @@ jobs:
         run: |
           set -euo pipefail
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
-          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(command -v sdkmanager || true)"; fi
-          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
-            echo "::error::Android SDK Manager was not found on the runner."
-            exit 1
-          fi
-
-          "$SDKMANAGER" --sdk_root="$SDK_ROOT" --channel=3 \
-            "platforms;android-37.0" \
-            "build-tools;37.0.0" \
-            "cmake;3.22.1"
+          "$ANDROID_CLI" --sdk="$SDK_ROOT" sdk install --canary \
+            platform-tools platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1
 
           test -f "$SDK_ROOT/platforms/android-37.0/android.jar"
           test -x "$SDK_ROOT/build-tools/37.0.0/aapt2"
@@ -201,7 +212,8 @@ jobs:
             --target-platform android-arm64 \
             --no-pub \
             --obfuscate \
-            --split-debug-info=build/debug-info
+            --split-debug-info=build/debug-info \
+            --extra-gen-snapshot-options=--strip
 
       - name: Verify FFmpeg JNI and license notices are packaged
         working-directory: source
