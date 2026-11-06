@@ -146,7 +146,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.50.0-0.3.pre'
+          flutter-version: '3.50.0-0.4.pre'
           channel: beta
           cache: true
 
