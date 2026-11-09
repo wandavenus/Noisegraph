@@ -124,8 +124,14 @@ jobs:
         run: |
           set -euo pipefail
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          # platform-tools stays on the stable channel: the newest dev/canary
+          # archive (platform-tools_r37.0.2-linux.zip) is advertised in the
+          # repository manifest but returns HTTP 404 from dl.google.com,
+          # which killed this step before any compilation happened.
+          "$ANDROID_CLI" --sdk="$SDK_ROOT" sdk install \
+            platform-tools
           "$ANDROID_CLI" --sdk="$SDK_ROOT" sdk install --canary \
-            platform-tools platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1
+            platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1
 
           test -f "$SDK_ROOT/platforms/android-37.0/android.jar"
           test -x "$SDK_ROOT/build-tools/37.0.0/aapt2"
