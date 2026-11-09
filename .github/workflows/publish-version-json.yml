@@ -1,0 +1,104 @@
+name: Publish version.json
+
+# Keeps the in-app updater manifest (version.json, served by GitHub Pages
+# next to index.html) in sync with the newest published release. Publishing
+# a release is the only manual step: this workflow reads the version from
+# the APK itself and fills in URL, size, and SHA-256 from the release asset.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to describe (empty = latest published release)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-version-json
+  cancel-in-progress: false
+
+jobs:
+  publish-version-json:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Resolve release APK asset
+        id: rel
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          TAG="${EVENT_TAG:-${INPUT_TAG:-}}"
+          if [[ -z "$TAG" ]]; then
+            TAG="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName')"
+          fi
+          echo "Release tag: $TAG"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --json tagName,publishedAt,body,assets > release.json
+          ASSET="$(jq -r '[.assets[].name | select(endswith("arm64-v8a.apk"))][0] // empty' release.json)"
+          if [[ -z "$ASSET" ]]; then
+            echo "::warning::Release $TAG has no arm64-v8a APK asset; version.json left unchanged."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          {
+            echo "skip=false"
+            echo "tag=$TAG"
+            echo "asset=$ASSET"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build version.json from the APK
+        if: steps.rel.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.rel.outputs.tag }}
+          ASSET: ${{ steps.rel.outputs.asset }}
+        run: |
+          set -euo pipefail
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ASSET" --dir apk
+          APK="apk/$ASSET"
+          SHA256="$(sha256sum "$APK" | cut -d' ' -f1)"
+          SIZE="$(stat -c%s "$APK")"
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          AAPT2="$(ls "$SDK_ROOT"/build-tools/*/aapt2 | sort -V | tail -1)"
+          VERSION="$("$AAPT2" dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)"
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::Could not read versionName from $ASSET"
+            exit 1
+          fi
+          NOTES="$(jq -r '.body // ""' release.json)"
+          PUBLISHED="$(jq -r '.publishedAt' release.json | cut -d'T' -f1)"
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ASSET}"
+          jq -n \
+            --arg version "$VERSION" \
+            --arg apkUrl "$URL" \
+            --argjson sizeBytes "$SIZE" \
+            --arg sha256 "$SHA256" \
+            --arg notesId "$NOTES" \
+            --arg notesEn "$NOTES" \
+            --arg publishedAt "$PUBLISHED" \
+            '{version:$version, apkUrl:$apkUrl, sizeBytes:$sizeBytes, sha256:$sha256, notesId:$notesId, notesEn:$notesEn, publishedAt:$publishedAt}' \
+            > version.json
+          cat version.json
+
+      - name: Commit version.json
+        if: steps.rel.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add version.json
+          if git diff --cached --quiet; then
+            echo "version.json already up to date."
+            exit 0
+          fi
+          git commit -m "Update version.json for ${{ steps.rel.outputs.tag }}"
+          git push
