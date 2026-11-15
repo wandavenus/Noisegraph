@@ -18,43 +18,25 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
-      - name: Validate source commit
-        id: source
-        env:
-          SOURCE_SHA: ${{ github.event.client_payload.sha }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
-            exit 1
-          fi
-          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Testing Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Checkout private
-        uses: actions/checkout@v7
+      - name: Checkout workflow repo (local composite actions)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: wandavenus/Dump
-          ref: ${{ steps.source.outputs.sha }}
-          token: ${{ secrets.SOURCE_READ_TOKEN }}
-          path: source
           persist-credentials: false
-          fetch-depth: 1
+
+      - name: Checkout Dump source
+        id: source
+        uses: ./.github/actions/checkout-dump-source
+        with:
+          sha: ${{ github.event.client_payload.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
           pub-cache: true
 
-      - name: Cache Flutter Pub dependencies
-        uses: actions/cache@v6
-        with:
-          path: ~/.pub-cache
-          key: flutter-pub-${{ runner.os }}-${{ hashFiles('source/pubspec.lock') }}
-          restore-keys: |
-            flutter-pub-${{ runner.os }}-
       - name: Install dependencies
         working-directory: source
         run: flutter pub get
@@ -72,43 +54,25 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
-      - name: Validate source commit
-        id: source
-        env:
-          SOURCE_SHA: ${{ github.event.client_payload.sha }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
-            exit 1
-          fi
-          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Testing AutoMix on Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Checkout private Dump source
-        uses: actions/checkout@v7
+      - name: Checkout workflow repo (local composite actions)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: wandavenus/Dump
-          ref: ${{ steps.source.outputs.sha }}
-          token: ${{ secrets.SOURCE_READ_TOKEN }}
-          path: source
           persist-credentials: false
-          fetch-depth: 1
+
+      - name: Checkout Dump source
+        id: source
+        uses: ./.github/actions/checkout-dump-source
+        with:
+          sha: ${{ github.event.client_payload.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
           pub-cache: true
 
-      - name: Cache Flutter Pub dependencies
-        uses: actions/cache@v6
-        with:
-          path: ~/.pub-cache
-          key: flutter-pub-${{ runner.os }}-${{ hashFiles('source/pubspec.lock') }}
-          restore-keys: |
-            flutter-pub-${{ runner.os }}-
       - name: Install dependencies
         working-directory: source
         run: flutter pub get
@@ -130,31 +94,20 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
-      - name: Validate source commit
-        id: source
-        env:
-          SOURCE_SHA: ${{ github.event.client_payload.sha }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
-            exit 1
-          fi
-          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Testing native DSP + AutoMix C/NEON on Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Checkout private Dump source
-        uses: actions/checkout@v7
+      - name: Checkout workflow repo (local composite actions)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: wandavenus/Dump
-          ref: ${{ steps.source.outputs.sha }}
-          token: ${{ secrets.SOURCE_READ_TOKEN }}
-          path: source
           persist-credentials: false
-          fetch-depth: 1
+
+      - name: Checkout Dump source
+        id: source
+        uses: ./.github/actions/checkout-dump-source
+        with:
+          sha: ${{ github.event.client_payload.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
@@ -167,7 +120,7 @@ jobs:
           sudo apt-get install -y clang cmake ninja-build ccache libclang-dev
           command -v ccache
       - name: Cache native C compiler objects
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ccache
           key: ccache-${{ runner.os }}-${{ runner.arch }}-clang-x86_64-v1-${{ hashFiles('source/native_audio_runtime/src/**/*.c', 'source/native_audio_runtime/src/**/*.h', 'source/native_audio_runtime/src/**/*.S', 'source/native_audio_runtime/test/automix_native_c_test.c') }}
@@ -177,7 +130,7 @@ jobs:
         run: ccache --max-size=1G
 
       - name: Cache native_audio_runtime Pub dependencies
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.pub-cache
           key: native-pub-${{ runner.os }}-${{ hashFiles('source/native_audio_runtime/pubspec.yaml') }}
@@ -274,29 +227,20 @@ jobs:
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 45
     steps:
-      - name: Validate source commit
-        id: source
-        env:
-          SOURCE_SHA: ${{ github.event.client_payload.sha }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
-            exit 1
-          fi
-          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Running native ARM64 C/NEON tests for Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
-          test "$(uname -m)" = "aarch64"
-
-      - name: Checkout private Dump source
-        uses: actions/checkout@v7
+      - name: Checkout workflow repo (local composite actions)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: wandavenus/Dump
-          ref: ${{ steps.source.outputs.sha }}
-          token: ${{ secrets.SOURCE_READ_TOKEN }}
-          path: source
           persist-credentials: false
-          fetch-depth: 1
+
+      - name: Checkout Dump source
+        id: source
+        uses: ./.github/actions/checkout-dump-source
+        with:
+          sha: ${{ github.event.client_payload.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
+
+      - name: Verify ARM64 runner
+        run: test "$(uname -m)" = "aarch64"
 
       - name: Install native ARM64 C toolchain
         run: |
@@ -307,7 +251,7 @@ jobs:
           command -v ccache
 
       - name: Cache native ARM64 compiler objects
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ccache
           key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-arm64-v1-${{ hashFiles('source/native_audio_runtime/src/**/*.c', 'source/native_audio_runtime/src/**/*.h', 'source/native_audio_runtime/src/**/*.S', 'source/native_audio_runtime/test/automix_native_c_test.c') }}
@@ -376,109 +320,39 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
-      - name: Validate source commit
-        id: source
-        env:
-          SOURCE_SHA: ${{ github.event.client_payload.sha }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
-            exit 1
-          fi
-          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Testing Kotlin on Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Checkout private Dump source
-        uses: actions/checkout@v7
+      - name: Checkout workflow repo (local composite actions)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: wandavenus/Dump
-          ref: ${{ steps.source.outputs.sha }}
-          token: ${{ secrets.SOURCE_READ_TOKEN }}
-          path: source
           persist-credentials: false
-          fetch-depth: 1
+
+      - name: Checkout Dump source
+        id: source
+        uses: ./.github/actions/checkout-dump-source
+        with:
+          sha: ${{ github.event.client_payload.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
 
       - name: Set up Java
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "21"
       - name: Set up Gradle cache
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           add-job-summary: never
           cache-provider: enhanced
 
-      - name: Configure writable Android SDK root
-        run: |
-          set -euo pipefail
-          SDK_ROOT="$HOME/.android/sdk"
-          mkdir -p "$SDK_ROOT"
-          {
-            echo "ANDROID_HOME=$SDK_ROOT"
-            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
-          } >> "$GITHUB_ENV"
-      - name: Set up Android SDK licenses
-        uses: android-actions/setup-android@v4
-        with:
-          cmdline-tools-version: 14742923
-          packages: ''
-      - name: Resolve Android SDK root
-        id: android-sdk
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.android/sdk}}"
-          echo "root=$SDK_ROOT" >> "$GITHUB_OUTPUT"
-      - name: Cache Android SDK, NDK, and CMake
-        uses: actions/cache@v6
-        with:
-          path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
-            ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
-            ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
-            ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk28.2.13676358-v3
-          restore-keys: |
-            android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Install Android CLI and SDK packages
-        run: |
-          set -euo pipefail
-          ANDROID_CLI="$RUNNER_TEMP/android"
-          curl --fail --location --silent --show-error \
-            https://dl.google.com/android/cli/latest/linux_x86_64/android \
-            --output "$ANDROID_CLI"
-          chmod +x "$ANDROID_CLI"
-          echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
-
-          "$ANDROID_CLI" --sdk="$ANDROID_SDK_ROOT" sdk install --canary \
-            platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1 \
-            ndk/28.2.13676358
-
-          NDK_DIR="$ANDROID_SDK_ROOT/ndk/28.2.13676358"
-          test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
-          test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
-          test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
-          test -f "$NDK_DIR/source.properties"
-          {
-            echo "ANDROID_NDK_HOME=$NDK_DIR"
-            echo "ANDROID_NDK=$NDK_DIR"
-          } >> "$GITHUB_ENV"
+      - name: Set up Android toolchain
+        uses: ./.github/actions/setup-android-toolchain
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
+          pub-cache: true
 
-      - name: Cache Flutter Pub dependencies
-        uses: actions/cache@v6
-        with:
-          path: ~/.pub-cache
-          key: flutter-pub-${{ runner.os }}-${{ hashFiles('source/pubspec.lock') }}
-          restore-keys: |
-            flutter-pub-${{ runner.os }}-
       - name: Install Flutter dependencies
         working-directory: source
         run: flutter pub get
@@ -492,7 +366,7 @@ jobs:
 
       - name: Upload Android verification reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-verification-reports
           path: |
@@ -508,109 +382,39 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 90
     steps:
-      - name: Validate source commit
-        id: source
-        env:
-          SOURCE_SHA: ${{ github.event.client_payload.sha }}
-        run: |
-          set -euo pipefail
-          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            echo "::error::Missing or invalid Dump commit SHA in repository_dispatch payload."
-            exit 1
-          fi
-          echo "sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "Building ARM64 from Dump commit: $SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Checkout source
-        uses: actions/checkout@v7
+      - name: Checkout workflow repo (local composite actions)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: wandavenus/Dump
-          ref: ${{ steps.source.outputs.sha }}
-          token: ${{ secrets.SOURCE_READ_TOKEN }}
-          path: source
           persist-credentials: false
-          fetch-depth: 1
+
+      - name: Checkout Dump source
+        id: source
+        uses: ./.github/actions/checkout-dump-source
+        with:
+          sha: ${{ github.event.client_payload.sha }}
+          token: ${{ secrets.SOURCE_READ_TOKEN }}
 
       - name: Set up Java
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "21"
       - name: Set up Gradle cache
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           add-job-summary: never
           cache-provider: enhanced
 
-      - name: Configure writable Android SDK root
-        run: |
-          set -euo pipefail
-          SDK_ROOT="$HOME/.android/sdk"
-          mkdir -p "$SDK_ROOT"
-          {
-            echo "ANDROID_HOME=$SDK_ROOT"
-            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
-          } >> "$GITHUB_ENV"
-      - name: Set up Android SDK licenses
-        uses: android-actions/setup-android@v4
-        with:
-          cmdline-tools-version: 14742923
-          packages: ''
-      - name: Resolve Android SDK root
-        id: android-sdk
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.android/sdk}}"
-          echo "root=$SDK_ROOT" >> "$GITHUB_OUTPUT"
-      - name: Cache Android SDK, NDK, and CMake
-        uses: actions/cache@v6
-        with:
-          path: |
-            ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
-            ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
-            ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
-            ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk28.2.13676358-v3
-          restore-keys: |
-            android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Install Android CLI and SDK packages
-        run: |
-          set -euo pipefail
-          ANDROID_CLI="$RUNNER_TEMP/android"
-          curl --fail --location --silent --show-error \
-            https://dl.google.com/android/cli/latest/linux_x86_64/android \
-            --output "$ANDROID_CLI"
-          chmod +x "$ANDROID_CLI"
-          echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
-
-          "$ANDROID_CLI" --sdk="$ANDROID_SDK_ROOT" sdk install --canary \
-            platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1 \
-            ndk/28.2.13676358
-
-          NDK_DIR="$ANDROID_SDK_ROOT/ndk/28.2.13676358"
-          test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
-          test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
-          test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
-          test -f "$NDK_DIR/source.properties"
-          {
-            echo "ANDROID_NDK_HOME=$NDK_DIR"
-            echo "ANDROID_NDK=$NDK_DIR"
-          } >> "$GITHUB_ENV"
+      - name: Set up Android toolchain
+        uses: ./.github/actions/setup-android-toolchain
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
+          pub-cache: true
 
-      - name: Cache Flutter Pub dependencies
-        uses: actions/cache@v6
-        with:
-          path: ~/.pub-cache
-          key: flutter-pub-${{ runner.os }}-${{ hashFiles('source/pubspec.lock') }}
-          restore-keys: |
-            flutter-pub-${{ runner.os }}-
       - name: Install Flutter dependencies
         working-directory: source
         run: flutter pub get

@@ -24,9 +24,10 @@ concurrency:
 jobs:
   publish-version-json:
     runs-on: ubuntu-26.04
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Always work on main: a release event would otherwise check out
           # the tag in detached HEAD state and the commit step cannot push.
@@ -42,7 +43,7 @@ jobs:
           set -euo pipefail
           TAG="${EVENT_TAG:-${INPUT_TAG:-}}"
           if [[ -z "$TAG" ]]; then
-            TAG="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName')"
+            TAG="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --exclude-drafts --json tagName --jq '.[0].tagName')"
           fi
           echo "Release tag: $TAG"
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \

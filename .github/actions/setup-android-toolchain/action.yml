@@ -1,0 +1,73 @@
+name: Set up Android toolchain
+description: >-
+  Configure a writable Android SDK root and install the pinned platform,
+  build-tools, CMake and NDK used by the Android test jobs.
+
+runs:
+  using: composite
+  steps:
+    - name: Configure writable Android SDK root
+      shell: bash
+      run: |
+        set -euo pipefail
+        SDK_ROOT="$HOME/.android/sdk"
+        mkdir -p "$SDK_ROOT"
+        {
+          echo "ANDROID_HOME=$SDK_ROOT"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT"
+        } >> "$GITHUB_ENV"
+
+    - name: Set up Android SDK licenses
+      uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+      with:
+        cmdline-tools-version: 14742923
+        packages: ''
+
+    - name: Resolve Android SDK root
+      id: android-sdk
+      shell: bash
+      run: |
+        set -euo pipefail
+        SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/.android/sdk}}"
+        echo "root=$SDK_ROOT" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Android SDK, NDK, and CMake
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
+          ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
+          ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
+          ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
+        key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk28.2.13676358-v3
+        restore-keys: |
+          android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Install Android CLI and SDK packages
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Pinned Android CLI build: bump version + sha256 deliberately.
+        ANDROID_CLI_VERSION="1.1.16717390"
+        ANDROID_CLI_SHA256="43204dcc42955f4698b7a7ca945f26c26f594f9239f5f8e11b3b73d4ceaa11ae"
+        ANDROID_CLI="$RUNNER_TEMP/android"
+        curl --fail --location --silent --show-error \
+          "https://dl.google.com/android/cli/${ANDROID_CLI_VERSION}/linux_x86_64/android" \
+          --output "$ANDROID_CLI"
+        echo "$ANDROID_CLI_SHA256  $ANDROID_CLI" | sha256sum --check -
+        chmod +x "$ANDROID_CLI"
+        echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
+
+        "$ANDROID_CLI" --sdk="$ANDROID_SDK_ROOT" sdk install --canary \
+          platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1 \
+          ndk/28.2.13676358
+
+        NDK_DIR="$ANDROID_SDK_ROOT/ndk/28.2.13676358"
+        test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
+        test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
+        test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
+        test -f "$NDK_DIR/source.properties"
+        {
+          echo "ANDROID_NDK_HOME=$NDK_DIR"
+          echo "ANDROID_NDK=$NDK_DIR"
+        } >> "$GITHUB_ENV"
