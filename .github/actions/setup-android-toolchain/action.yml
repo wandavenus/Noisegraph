@@ -38,8 +38,8 @@ runs:
           ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
           ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
           ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
-          ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-        key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk28.2.13676358-v3
+          ${{ steps.android-sdk.outputs.root }}/ndk/30.0.16248370
+        key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk30.0.16248370-v3
         restore-keys: |
           android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
@@ -60,9 +60,9 @@ runs:
 
         "$ANDROID_CLI" --sdk="$ANDROID_SDK_ROOT" sdk install --canary \
           platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1 \
-          ndk/28.2.13676358
+          ndk/30.0.16248370
 
-        NDK_DIR="$ANDROID_SDK_ROOT/ndk/28.2.13676358"
+        NDK_DIR="$ANDROID_SDK_ROOT/ndk/30.0.16248370"
         test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
         test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
         test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"

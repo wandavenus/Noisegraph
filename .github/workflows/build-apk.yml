@@ -98,26 +98,26 @@ jobs:
         id: android-ndk-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ steps.android-sdk.outputs.root }}/ndk/28.2.13676358
-          key: android-ndk-${{ runner.os }}-${{ runner.arch }}-28.2.13676358
+          path: ${{ steps.android-sdk.outputs.root }}/ndk/30.0.16248370
+          key: android-ndk-${{ runner.os }}-${{ runner.arch }}-30.0.16248370
 
       - name: Cache native CMake and Ninja build
         id: native-cmake-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: source/android/app/.cxx
-          key: native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-cmake-3.22.1-arm64-v8a-${{ hashFiles('source/android/app/build.gradle', 'source/android/build.gradle', 'source/android/settings.gradle', 'source/android/gradle.properties', 'source/android/app/src/main/cpp/**/*', 'source/native_audio_runtime/src/**/*') }}
+          key: native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-cmake-3.22.1-arm64-v8a-${{ hashFiles('source/android/app/build.gradle', 'source/android/build.gradle', 'source/android/settings.gradle', 'source/android/gradle.properties', 'source/android/app/src/main/cpp/**/*', 'source/native_audio_runtime/src/**/*') }}
           restore-keys: |
-            native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-cmake-3.22.1-arm64-v8a-
+            native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-cmake-3.22.1-arm64-v8a-
 
       - name: Cache FFmpeg build outputs
         id: ffmpeg-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: source/android/decoder-ffmpeg/.ffmpeg-build
-          key: ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-${{ hashFiles('source/android/build-ffmpeg-jni.sh', 'source/android/decoder-ffmpeg/src/main/jni/ffmpeg_jni.cc') }}
+          key: ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-api-27-n8.1.3-${{ hashFiles('source/android/build-ffmpeg-jni.sh', 'source/android/decoder-ffmpeg/src/main/jni/ffmpeg_jni.cc') }}
           restore-keys: |
-            ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-28.2.13676358-api-27-n8.1.3-
+            ffmpeg-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-api-27-n8.1.3-
 
       - name: Install pinned Android NDK
         working-directory: source
