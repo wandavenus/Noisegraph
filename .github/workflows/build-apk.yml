@@ -94,12 +94,12 @@ jobs:
           "$ANDROID_CLI" --version
 
 
-      - name: Cache pinned Android NDK
-        id: android-ndk-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ steps.android-sdk.outputs.root }}/ndk/30.0.16248370
-          key: android-ndk-${{ runner.os }}-${{ runner.arch }}-30.0.16248370
+      # NOTE: the pinned NDK is intentionally NOT cached. The runner image
+      # already ships ndk/30.0.16248370 under the SDK root, owned by root;
+      # caching that tree makes actions/cache restore fail on every run
+      # (tar cannot utime/chmod the pre-existing root-owned directories).
+      # The install step below verifies the preinstalled NDK in seconds
+      # and downloads it only if a future image drops it.
 
       - name: Cache native CMake and Ninja build
         id: native-cmake-cache
