@@ -1,9 +1,9 @@
 {
-  "version": "1.5.153",
-  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/build-43702328629/Noisegraph-300-arm64-v8a.apk",
-  "sizeBytes": 28135155,
-  "sha256": "0363355c4b30ef6f4f5a232012655c4244a1d0787defb5967f6686f74dd600e8",
-  "notesId": "Automated release build for Noisegraph.\r\n\r\nSource revision: 8e97362bbd832219e86c5bdbb3730cb6b70eece3\r",
-  "notesEn": "Automated release build for Noisegraph.\r\n\r\nSource revision: 8e97362bbd832219e86c5bdbb3730cb6b70eece3\r",
-  "publishedAt": "2026-11-15"
+  "version": "1.5.191",
+  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/v1.5.191/Noisegraph-339-arm64-v8a.apk",
+  "sizeBytes": 27197994,
+  "sha256": "52febf5e3057a42a70ced21b3285c0ccf1a6683f1bdc95c4aa9829a20794f167",
+  "notesId": "Rilis publik pertama Noisegraph — pemutar musik lokal Android dengan AutoMix.\n\nYang baru di versi ini:\n- Nama artis di tampilan lirik sekarang bergeser (marquee) sama seperti judul lagu bila tidak muat.\n- Latar Animated Blur dan gaya cover Default / Full-Bleed.\n- Karaoke selalu aktif untuk lirik dengan timing per kata.\n\nUnduh file .apk di bawah, lalu pasang di perangkat Android (arm64).",
+  "notesEn": "Rilis publik pertama Noisegraph — pemutar musik lokal Android dengan AutoMix.\n\nYang baru di versi ini:\n- Nama artis di tampilan lirik sekarang bergeser (marquee) sama seperti judul lagu bila tidak muat.\n- Latar Animated Blur dan gaya cover Default / Full-Bleed.\n- Karaoke selalu aktif untuk lirik dengan timing per kata.\n\nUnduh file .apk di bawah, lalu pasang di perangkat Android (arm64).",
+  "publishedAt": "2026-11-18"
 }
