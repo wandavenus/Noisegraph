@@ -4,9 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#fdfcfc">
+    <script>
+      (function () {
+        var theme = "light";
+        try {
+          theme = localStorage.getItem("noisegraph-theme") ||
+            (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        } catch (error) {}
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0e'/%3E%3Ctext x='32' y='45' font-family='monospace' font-size='36' font-weight='bold' fill='%23fdfcfc' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
     <meta name="description" content="Noisegraph is an Android music player built around your local library, an immersive Now Playing experience, and thoughtful transitions.">
     <meta property="og:title" content="Noisegraph — A music player for your library">
     <meta property="og:description" content="Your music, your library, a better flow.">
+    <meta property="og:image" content="https://wandavenus.github.io/Noisegraph/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
     <title>Noisegraph — A music player for your library
     </title>
 
@@ -660,8 +673,8 @@ html[data-theme="dark"] .nav-links {
           <article class="feature-card">
             <span class="feature-index">[02] / NOW PLAYING</span>
             <h3>A player that feels alive</h3>
-            <p>Choose the animated Fluid background or artwork blur, with expressive cover art and motion designed around the music.</p>
-            <div class="feature-tags"><span>FLUID</span><span>ARTWORK BLUR</span></div>
+            <p>An animated artwork blur backdrop that breathes with the music, with two cover styles — a framed Default look or an edge-to-edge Full-Bleed presentation.</p>
+            <div class="feature-tags"><span>ARTWORK BLUR</span><span>COVER STYLE</span></div>
           </article>
           <article class="feature-card">
             <span class="feature-index">[03] / LYRICS</span>
@@ -783,6 +796,11 @@ html[data-theme="dark"] .nav-links {
     root.dataset.theme = theme;
     const isDark = theme === "dark";
 
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) {
+      themeColor.setAttribute("content", isDark ? "#101012" : "#fdfcfc");
+    }
+
     if (themeIcon) themeIcon.textContent = isDark ? "☼" : "◐";
     if (themeLabel) themeLabel.textContent = isDark ? "Light" : "Dark";
 
@@ -798,7 +816,7 @@ html[data-theme="dark"] .nav-links {
     let initialTheme = "light";
 
     try {
-      initialTheme = localStorage.getItem("noisegraph-theme") || "light";
+      initialTheme = localStorage.getItem("noisegraph-theme") || root.dataset.theme || "light";
     } catch (error) {
       // Theme switching still works when storage is unavailable.
     }
