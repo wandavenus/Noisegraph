@@ -1,9 +1,9 @@
 {
-  "version": "1.5.191",
-  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/v1.5.191/Noisegraph-339-arm64-v8a.apk",
+  "version": "1.5.192",
+  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/v1.5.192/Noisegraph-340-arm64-v8a.apk",
   "sizeBytes": 27197994,
-  "sha256": "52febf5e3057a42a70ced21b3285c0ccf1a6683f1bdc95c4aa9829a20794f167",
-  "notesId": "Rilis publik pertama Noisegraph — pemutar musik lokal Android dengan AutoMix.\n\nYang baru di versi ini:\n- Nama artis di tampilan lirik sekarang bergeser (marquee) sama seperti judul lagu bila tidak muat.\n- Latar Animated Blur dan gaya cover Default / Full-Bleed.\n- Karaoke selalu aktif untuk lirik dengan timing per kata.\n\nUnduh file .apk di bawah, lalu pasang di perangkat Android (arm64).",
-  "notesEn": "Rilis publik pertama Noisegraph — pemutar musik lokal Android dengan AutoMix.\n\nYang baru di versi ini:\n- Nama artis di tampilan lirik sekarang bergeser (marquee) sama seperti judul lagu bila tidak muat.\n- Latar Animated Blur dan gaya cover Default / Full-Bleed.\n- Karaoke selalu aktif untuk lirik dengan timing per kata.\n\nUnduh file .apk di bawah, lalu pasang di perangkat Android (arm64).",
+  "sha256": "fc4146d196ac1774bca3d3ef5a6be51f37672c639c92a8ea09f38c45c3265cee",
+  "notesId": "Yang baru di versi ini:\n- Kotak judul lagu dan nama artis di tampilan lirik dipersempit sedikit (185 px) supaya tidak terlalu dekat ke tombol di kanan atas.\n\nUnduh file .apk di bawah, lalu pasang di perangkat Android (arm64).",
+  "notesEn": "Yang baru di versi ini:\n- Kotak judul lagu dan nama artis di tampilan lirik dipersempit sedikit (185 px) supaya tidak terlalu dekat ke tombol di kanan atas.\n\nUnduh file .apk di bawah, lalu pasang di perangkat Android (arm64).",
   "publishedAt": "2026-11-18"
 }
