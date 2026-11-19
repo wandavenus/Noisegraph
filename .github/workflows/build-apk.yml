@@ -106,9 +106,9 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: source/android/app/.cxx
-          key: native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-cmake-3.22.1-arm64-v8a-${{ hashFiles('source/android/app/build.gradle', 'source/android/build.gradle', 'source/android/settings.gradle', 'source/android/gradle.properties', 'source/android/app/src/main/cpp/**/*', 'source/native_audio_runtime/src/**/*') }}
+          key: native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-cmake-4.1.2-arm64-v8a-${{ hashFiles('source/android/app/build.gradle', 'source/android/build.gradle', 'source/android/settings.gradle', 'source/android/gradle.properties', 'source/android/app/src/main/cpp/**/*', 'source/native_audio_runtime/src/**/*') }}
           restore-keys: |
-            native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-cmake-3.22.1-arm64-v8a-
+            native-cmake-${{ runner.os }}-${{ runner.arch }}-ndk-30.0.16248370-cmake-4.1.2-arm64-v8a-
 
       - name: Cache FFmpeg build outputs
         id: ffmpeg-cache
@@ -136,11 +136,11 @@ jobs:
           "$ANDROID_CLI" --sdk="$SDK_ROOT" sdk install \
             platform-tools
           "$ANDROID_CLI" --sdk="$SDK_ROOT" sdk install --canary \
-            platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1
+            platforms/android-37.0 build-tools/37.0.0 cmake/4.1.2
 
           test -f "$SDK_ROOT/platforms/android-37.0/android.jar"
           test -x "$SDK_ROOT/build-tools/37.0.0/aapt2"
-          test -x "$SDK_ROOT/cmake/3.22.1/bin/cmake"
+          test -x "$SDK_ROOT/cmake/4.1.2/bin/cmake"
 
       - name: Set up Java
         uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0

@@ -37,9 +37,9 @@ runs:
         path: |
           ${{ steps.android-sdk.outputs.root }}/platforms/android-37.0
           ${{ steps.android-sdk.outputs.root }}/build-tools/37.0.0
-          ${{ steps.android-sdk.outputs.root }}/cmake/3.22.1
+          ${{ steps.android-sdk.outputs.root }}/cmake/4.1.2
           ${{ steps.android-sdk.outputs.root }}/ndk/30.0.16248370
-        key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake3.22.1-ndk30.0.16248370-v3
+        key: android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-api37.0-bt37.0.0-cmake4.1.2-ndk30.0.16248370-v3
         restore-keys: |
           android-toolchain-home-${{ runner.os }}-${{ runner.arch }}-
 
@@ -59,13 +59,13 @@ runs:
         echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
 
         "$ANDROID_CLI" --sdk="$ANDROID_SDK_ROOT" sdk install --canary \
-          platforms/android-37.0 build-tools/37.0.0 cmake/3.22.1 \
+          platforms/android-37.0 build-tools/37.0.0 cmake/4.1.2 \
           ndk/30.0.16248370
 
         NDK_DIR="$ANDROID_SDK_ROOT/ndk/30.0.16248370"
         test -f "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
         test -x "$ANDROID_SDK_ROOT/build-tools/37.0.0/aapt2"
-        test -x "$ANDROID_SDK_ROOT/cmake/3.22.1/bin/cmake"
+        test -x "$ANDROID_SDK_ROOT/cmake/4.1.2/bin/cmake"
         test -f "$NDK_DIR/source.properties"
         {
           echo "ANDROID_NDK_HOME=$NDK_DIR"
