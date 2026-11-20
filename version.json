@@ -1,9 +1,9 @@
 {
-  "version": "1.5.209",
-  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/v1.5.209/Noisegraph-354-arm64-v8a.apk",
-  "sizeBytes": 25268001,
-  "sha256": "9453c4023429c3d9cd16dd2c3b9d885d633aedb9e275b0de770d3425ba213055",
-  "notesId": "Baru di v1.5.208:\n- App sekarang punya folder sendiri di Android/data/dev.wndavenz.music.\n- APK update diunduh ke folder itu dan dipakai ulang klo sudah pernah diunduh - ga download ulang lg.\n- Halaman Log sekarang bisa menyimpan log ke file di folder itu (files/logs).\n\nPerbaikan di v1.5.209:\n- Indeks antrean tidak lagi mendarat di lagu yg salah saat ada lagu dihapus di tengah crossfade.\n- Kegagalan memasang update sekarang menampilkan error, bukan menutup dialog seolah berhasil.",
-  "notesEn": "What's new in v1.5.208:\n- The app now has its own folder in Android/data/dev.wndavenz.music.\n- Update APKs download into that folder and are reused when already downloaded - no more re-downloading the same update.\n- The Log page can now save logs to a file in that folder (files/logs).\n\nFixes in v1.5.209:\n- Fixed the queue index landing on the wrong track when a song was removed during a crossfade.\n- Update install failures now show an error instead of closing the dialog as if they succeeded.",
-  "publishedAt": "2026-11-19"
+  "version": "1.5.225",
+  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/build-44767093797/Noisegraph-358-arm64-v8a.apk",
+  "sizeBytes": 25261289,
+  "sha256": "41f58b457698cd5624e26b55b9c6bc6ab23ef249b654bb463b99028b5e367ab2",
+  "notesId": "Automated release build for Noisegraph.\r\n\r\nSource revision: eb00ecdaeb79fa0d3390324d7204498cf20bfa74\r",
+  "notesEn": "Automated release build for Noisegraph.\r\n\r\nSource revision: eb00ecdaeb79fa0d3390324d7204498cf20bfa74\r",
+  "publishedAt": "2026-11-20"
 }
