@@ -106,4 +106,16 @@ jobs:
             exit 0
           fi
           git commit -m "Update version.json for ${{ steps.rel.outputs.tag }}"
-          git push origin HEAD:main
+          # main may have moved since checkout (e.g. a manual push while
+          # this run was in flight); rebase onto the newest main and retry
+          # so a raced push does not silently drop this update.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git rebase -X theirs origin/main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push attempt $attempt was rejected; retrying..."
+          done
+          echo "::error::Could not push version.json after 3 attempts."
+          exit 1

@@ -1,0 +1,23 @@
+name: Install Android CLI
+description: Download the pinned Android CLI build, verify its SHA-256, and export ANDROID_CLI.
+
+runs:
+  using: composite
+  steps:
+    - name: Install pinned Android CLI
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Pinned Android CLI build: bump version + sha256 deliberately.
+        # This is the single source for the pin — build-apk.yml and
+        # setup-android-toolchain both install the CLI through here.
+        ANDROID_CLI_VERSION="1.1.16717390"
+        ANDROID_CLI_SHA256="43204dcc42955f4698b7a7ca945f26c26f594f9239f5f8e11b3b73d4ceaa11ae"
+        ANDROID_CLI="$RUNNER_TEMP/android"
+        curl --fail --location --silent --show-error \
+          "https://dl.google.com/android/cli/${ANDROID_CLI_VERSION}/linux_x86_64/android" \
+          --output "$ANDROID_CLI"
+        echo "$ANDROID_CLI_SHA256  $ANDROID_CLI" | sha256sum --check -
+        chmod +x "$ANDROID_CLI"
+        echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
+        "$ANDROID_CLI" --version

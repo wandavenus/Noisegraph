@@ -77,17 +77,13 @@ jobs:
         working-directory: source
         run: flutter pub get
 
-      - name: Run AutoMix engine tests
+      - name: Run AutoMix tests
         working-directory: source
-        run: flutter test --no-pub test/services/automix_service/automix_engine_test.dart
-
-      - name: Run AutoMix cache tests
-        working-directory: source
-        run: flutter test --no-pub test/services/automix_service/automix_cache_test.dart
-
-      - name: Run AutoMix plan signature tests
-        working-directory: source
-        run: flutter test --no-pub test/services/automix_service/automix_plan_signature_test.dart
+        run: |
+          flutter test --no-pub \
+            test/services/automix_service/automix_engine_test.dart \
+            test/services/automix_service/automix_cache_test.dart \
+            test/services/automix_service/automix_plan_signature_test.dart
 
   native-c:
     if: ${{ github.event.client_payload.suite == 'all' || github.event.client_payload.suite == 'native-c' }}
@@ -174,43 +170,14 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1
         run: |
           set -euo pipefail
-          gcc -D_POSIX_C_SOURCE=200809L -DNAR_NATIVE_RUNTIME_TEST_HOOKS \
-            -std=c11 -O1 -g -fsanitize=address,undefined \
-            -fno-omit-frame-pointer -Isrc \
-            test/native_runtime_lifecycle_c_test.c \
-            src/native_audio_runtime.c src/audio_buffer.c src/dsp_pipeline.c \
-            src/gain_processor.c src/replaygain_processor.c src/biquad_filter.c \
-            src/comp_processor.c src/crossfeed_processor.c src/limiter_processor.c \
-            src/soft_clipper_processor.c src/loudness_processor.c src/aaudio_probe.c \
-            src/bg_composite.c src/automix_analyzer.c src/automix_neon.S \
-            src/automix_live_tracker.c \
-            src/automix_phase_lock.c src/automix_planner.c src/automix_tone_processor.c \
-            src/neon_kernels.S \
-            -lm -pthread -ldl -o /tmp/native_runtime_lifecycle_c_test
+          bash "$GITHUB_WORKSPACE/.github/scripts/compile-lifecycle-c-test.sh" gcc /tmp/native_runtime_lifecycle_c_test
           /tmp/native_runtime_lifecycle_c_test
 
       - name: Build AutoMix C Suite (x86_64, ASan+UBSan)
         working-directory: source/native_audio_runtime
         run: |
           set -euo pipefail
-          C_FLAGS=(
-            -std=c11 -O1 -g -fno-omit-frame-pointer
-            "-fsanitize=address,undefined" -Wall -Wextra -pthread
-            -I src
-          )
-          C_SOURCES=(
-            test/automix_native_c_test.c
-            src/automix_analyzer.c src/automix_planner.c
-            src/automix_phase_lock.c src/automix_tone_processor.c
-            src/automix_live_tracker.c
-          )
-          OBJECTS=()
-          for source_file in "${C_SOURCES[@]}"; do
-            object_file="/tmp/native-x86-$(basename "${source_file%.c}").o"
-            ccache clang "${C_FLAGS[@]}" -c "$source_file" -o "$object_file"
-            OBJECTS+=("$object_file")
-          done
-          clang "${C_FLAGS[@]}" "${OBJECTS[@]}" -lm -o /tmp/automix_native_c_test
+          bash "$GITHUB_WORKSPACE/.github/scripts/compile-automix-c-test.sh" "ccache clang" /tmp/automix_native_c_test
 
       - name: Run AutoMix C Suite (x86_64)
         env:
@@ -274,44 +241,14 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: |
           set -euo pipefail
-          gcc -D_POSIX_C_SOURCE=200809L -DNAR_NATIVE_RUNTIME_TEST_HOOKS \
-            -std=c11 -O1 -g -fsanitize=address,undefined \
-            -fno-omit-frame-pointer -Isrc \
-            test/native_runtime_lifecycle_c_test.c \
-            src/native_audio_runtime.c src/audio_buffer.c src/dsp_pipeline.c \
-            src/gain_processor.c src/replaygain_processor.c src/biquad_filter.c \
-            src/comp_processor.c src/crossfeed_processor.c src/limiter_processor.c \
-            src/soft_clipper_processor.c src/loudness_processor.c src/aaudio_probe.c \
-            src/bg_composite.c src/automix_analyzer.c src/automix_neon.S \
-            src/automix_live_tracker.c \
-            src/automix_phase_lock.c src/automix_planner.c src/automix_tone_processor.c \
-            src/neon_kernels.S \
-            -lm -pthread -ldl -o /tmp/native_runtime_lifecycle_c_test
+          bash "$GITHUB_WORKSPACE/.github/scripts/compile-lifecycle-c-test.sh" gcc /tmp/native_runtime_lifecycle_c_test
           /tmp/native_runtime_lifecycle_c_test
 
       - name: Build AutoMix C Suite with native ARM64 NEON
         working-directory: source/native_audio_runtime
         run: |
           set -euo pipefail
-          C_FLAGS=(
-            -std=c11 -O1 -g -fno-omit-frame-pointer
-            -fsanitize=address,undefined -Wall -Wextra -pthread
-            -I src
-          )
-          C_SOURCES=(
-            test/automix_native_c_test.c
-            src/automix_analyzer.c src/automix_planner.c
-            src/automix_phase_lock.c src/automix_tone_processor.c
-            src/automix_live_tracker.c
-            src/automix_neon.S src/automix_tone_neon.S
-          )
-          OBJECTS=()
-          for source_file in "${C_SOURCES[@]}"; do
-            object_file="/tmp/native-arm64-$(basename "${source_file%.*}").o"
-            ccache gcc "${C_FLAGS[@]}" -c "$source_file" -o "$object_file"
-            OBJECTS+=("$object_file")
-          done
-          ccache gcc "${C_FLAGS[@]}" "${OBJECTS[@]}" -lm -o /tmp/automix_native_c_test_arm64
+          bash "$GITHUB_WORKSPACE/.github/scripts/compile-automix-c-test.sh" "ccache gcc" /tmp/automix_native_c_test_arm64 src/automix_neon.S src/automix_tone_neon.S
 
       - name: Run AutoMix C Suite on native ARM64
         env:

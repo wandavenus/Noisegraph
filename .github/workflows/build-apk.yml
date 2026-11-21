@@ -79,19 +79,7 @@ jobs:
           packages: ''
 
       - name: Install Android CLI
-        run: |
-          set -euo pipefail
-          # Pinned Android CLI build: bump version + sha256 deliberately.
-          ANDROID_CLI_VERSION="1.1.16717390"
-          ANDROID_CLI_SHA256="43204dcc42955f4698b7a7ca945f26c26f594f9239f5f8e11b3b73d4ceaa11ae"
-          ANDROID_CLI="$RUNNER_TEMP/android"
-          curl --fail --location --silent --show-error \
-            "https://dl.google.com/android/cli/${ANDROID_CLI_VERSION}/linux_x86_64/android" \
-            --output "$ANDROID_CLI"
-          echo "$ANDROID_CLI_SHA256  $ANDROID_CLI" | sha256sum --check -
-          chmod +x "$ANDROID_CLI"
-          echo "ANDROID_CLI=$ANDROID_CLI" >> "$GITHUB_ENV"
-          "$ANDROID_CLI" --version
+        uses: ./.github/actions/install-android-cli
 
 
       # NOTE: the pinned NDK is intentionally NOT cached. The runner image
