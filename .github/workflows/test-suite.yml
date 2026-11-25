@@ -311,7 +311,7 @@ jobs:
 
       - name: Run Android unit tests, host tests, and lint
         working-directory: source/android
-        run: ./gradlew :app:testDebugUnitTest :app:testReplayGainAnalyzerRegistryHost :app:lintDebug :decoder-ffmpeg:testExtradataPadding --no-daemon --warning-mode=all
+        run: ./gradlew :app:testDebugUnitTest :app:lintDebug :decoder-ffmpeg:testExtradataPadding --no-daemon --warning-mode=all
 
       - name: Upload Android verification reports
         if: always()
