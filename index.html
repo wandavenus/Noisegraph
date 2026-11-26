@@ -71,6 +71,36 @@ a:focus-visible,button:focus-visible,summary:focus-visible { outline: 2px solid 
 .button:hover { background: var(--line) }
 .button-primary { background: var(--btn-bg); color: var(--btn-ink); border-color: var(--btn-bg) }
 .button-primary:hover { background: var(--ink); opacity: .88 }
+/* Sakuga VFX button (hero download only) — vendored sakuga-button.js (MIT), recoloured to page tokens.
+   Note: the derived --sk-btn-* vars must be set directly; setting --sk-sh/--sk-soft alone does not cascade. */
+.hero-actions sakuga-button {
+  --sk-card: #252525;
+  --sk-ink: #252525;
+  --sk-pri: #525252;
+  --sk-acc: #737373;
+  --sk-soft: #d9d9d9;
+  --sk-btn-line: #252525;
+  --sk-btn-sh: 4px 5px 0 #d9d9d9;
+  --sk-r: 8px;
+  --sk-bw: 2px;
+}
+html[data-theme="dark"] .hero-actions sakuga-button {
+  --sk-card: #f7f7f7;
+  --sk-ink: #f7f7f7;
+  --sk-pri: #c9c9c9;
+  --sk-acc: #a3a3a3;
+  --sk-soft: #4a4a4a;
+  --sk-btn-line: #f7f7f7;
+  --sk-btn-sh: 4px 5px 0 #161616;
+}
+.hero-actions sakuga-button::part(button) {
+  font-family: var(--sans); font-style: normal; font-weight: 600; font-size: 13.5px;
+  padding: 8px 14px; color: #ffffff;
+}
+html[data-theme="dark"] .hero-actions sakuga-button::part(button) { color: #232323 }
+@media (max-width: 820px) {
+  .hero-actions sakuga-button { flex: 1 1 auto }
+}
 .theme-toggle {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   min-height: 40px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 8px;
@@ -193,7 +223,7 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
         </h1>
         <p class="hero-copy">Noisegraph is a music player for the collection already on your device. A focused listening experience with synced lyrics, expressive artwork, detailed sound controls, and thoughtful transitions—without getting between you and the music.
         </p>
-        <div class="hero-actions"><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">Download latest APK ↗</a><a class="button" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">Explore the source ↗</a>
+        <div class="hero-actions"><sakuga-button id="download-apk">Download latest APK ↗</sakuga-button><a class="button" href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">Explore the source ↗</a>
         </div>
         <div class="hero-note"><span>Android</span><span>ARM64 / arm64-v8a</span><span>Open source development</span>
         </div>
@@ -329,6 +359,17 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
       </div>
     </footer>
 
+<script src="sakuga-button.js"></script>
+<script>
+  (function () {
+    var dl = document.getElementById("download-apk");
+    if (dl) {
+      dl.addEventListener("click", function () {
+        window.open("https://github.com/wandavenus/Noisegraph/releases/latest", "_blank", "noreferrer");
+      });
+    }
+  })();
+</script>
 <script>
 (function () {
   const root = document.documentElement;
