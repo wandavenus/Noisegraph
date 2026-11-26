@@ -365,7 +365,13 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
     var dl = document.getElementById("download-apk");
     if (dl) {
       dl.addEventListener("click", function () {
-        window.open("https://github.com/wandavenus/Noisegraph/releases/latest", "_blank", "noreferrer");
+        if (dl.dataset.opening) return;
+        dl.dataset.opening = "1";
+        // Let the Sakuga impact play out before the new tab takes focus.
+        setTimeout(function () {
+          window.open("https://github.com/wandavenus/Noisegraph/releases/latest", "_blank", "noreferrer");
+          delete dl.dataset.opening;
+        }, 850);
       });
     }
   })();
