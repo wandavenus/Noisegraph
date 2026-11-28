@@ -1,0 +1,19 @@
+/* Self-hosted fonts (N02-F04) — previously loaded from Google Fonts, which
+   sent every visitor's request to Google and contradicted privacy.html's
+   "No analytics or tracking" claim. Both families are variable fonts
+   (SIL Open Font License 1.1) served from this repo; the weight ranges
+   below cover exactly the weights the page uses. */
+@font-face {
+  font-family: "Outfit";
+  src: url("outfit.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("geist-mono.woff2") format("woff2");
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
