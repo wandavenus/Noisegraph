@@ -15,7 +15,7 @@ OUT="${2:?output path required}"
   src/native_audio_runtime.c src/audio_buffer.c src/dsp_pipeline.c \
   src/gain_processor.c src/replaygain_processor.c src/biquad_filter.c \
   src/comp_processor.c src/crossfeed_processor.c src/limiter_processor.c \
-  src/soft_clipper_processor.c src/loudness_processor.c src/aaudio_probe.c \
+  src/soft_clipper_processor.c src/loudness_processor.c \
   src/bg_composite.c src/automix_analyzer.c src/automix_neon.S \
   src/automix_live_tracker.c \
   src/automix_phase_lock.c src/automix_planner.c src/automix_tone_processor.c \
