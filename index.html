@@ -126,9 +126,7 @@ h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -.02em; line-
 .hero-note { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 16px; font-family: var(--mono); font-size: 11.5px; color: var(--muted) }
 .hero-note span+span:before { content: "·"; margin-right: 14px; color: var(--muted) }
 .release-box { border: 1px solid var(--line); border-radius: 10px; margin-top: 24px }
-.release-tabs { display: flex; gap: 0; padding: 0 14px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 11.5px }
-.release-tab { padding: 10px 12px 8px; border-bottom: 2px solid transparent; color: var(--muted) }
-.release-tab.active { border-bottom-color: var(--ink); color: var(--ink) }
+.release-label { padding: 10px 14px 8px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 11.5px; color: var(--muted) }
 .release-content { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 16px }
 .release-content code { font-family: var(--mono); font-size: 12px; line-height: 1.8; color: var(--ink) }
 .release-content code span { color: var(--muted) }
@@ -228,14 +226,13 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
         <div class="hero-note"><span>Android</span><span>ARM64 / arm64-v8a</span><span>Open source development</span>
         </div>
         <div class="release-box" aria-label="Latest APK download information">
-          <div class="release-tabs" aria-hidden="true"><span class="release-tab active">Android APK</span><span class="release-tab">GitHub Releases</span><span class="release-tab">ARM64</span>
-          </div>
+          <div class="release-label">Android APK · GitHub Releases · ARM64</div>
           <div class="release-content"><code><span>$</span> Download the latest available Noisegraph build<br><span>→ Check release notes for changes and compatibility</span></code><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">View releases ↗</a>
           </div>
         </div>
       </section>
       <section class="section wrap" id="features">
-        <p class="section-kicker">02 / What it's about
+        <p class="section-kicker">What it's about
         </p>
         <h2>Less noise. More listening.
         </h2>
@@ -299,7 +296,7 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
         </div>
       </section>
       <section class="section wrap" id="faq">
-        <p class="section-kicker">04 / Good to know
+        <p class="section-kicker">Good to know
         </p>
         <h2>Before you press play.
         </h2>
@@ -354,7 +351,7 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
     </main>
     <footer>
       <div class="footer-inner wrap"><a class="brand" href="#home"><span>noisegraph</span></a><span class="footer-copy">© <span id="year">2026</span> Noisegraph / Made for your library.</span>
-        <div class="footer-links"><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/wandavenus/Noisegraph/releases" target="_blank" rel="noreferrer">Releases</a><a href="https://github.com/wandavenus/Noisegraph/issues" target="_blank" rel="noreferrer">Support</a>
+        <div class="footer-links"><a href="https://github.com/wandavenus/Noisegraph" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/wandavenus/Noisegraph/releases" target="_blank" rel="noreferrer">Releases</a><a href="https://github.com/wandavenus/Noisegraph/issues" target="_blank" rel="noreferrer">Support</a><a href="privacy.html">Privacy</a>
         </div>
       </div>
     </footer>
