@@ -252,3 +252,35 @@ jobs:
             Source revision: ${{ steps.source.outputs.sha }}
 
           files: release/Noisegraph-${{ github.run_number }}-arm64-v8a.apk
+
+      - name: Prune old draft releases (keep newest 1)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Owner decision 2026-11-29 (Moy audit N01-F07): automated build
+          # drafts accumulated forever. Keep only the newest draft, and
+          # never delete the release the live updater manifest
+          # (version.json) points at.
+          PROTECTED=""
+          if [[ -f version.json ]]; then
+            PROTECTED="$(jq -r '.apkUrl // ""' version.json | sed -n 's|.*/releases/download/\([^/]*\)/.*|\1|p')"
+          fi
+          echo "Protected tag (from version.json): ${PROTECTED:-none}"
+          mapfile -t DRAFTS < <(gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName,isDraft,createdAt --jq '[.[] | select(.isDraft)] | sort_by(.createdAt) | reverse | .[].tagName')
+          echo "Drafts, newest first: ${DRAFTS[*]:-none}"
+          KEEP=1
+          for tag in "${DRAFTS[@]:-}"; do
+            [[ -z "$tag" ]] && continue
+            if [[ "$tag" == "$PROTECTED" ]]; then
+              echo "Keep $tag (referenced by version.json)"
+              continue
+            fi
+            if (( KEEP > 0 )); then
+              echo "Keep $tag (newest draft)"
+              KEEP=$((KEEP - 1))
+              continue
+            fi
+            echo "Delete draft $tag"
+            gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          done
