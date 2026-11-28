@@ -81,7 +81,13 @@ jobs:
         working-directory: source
         run: |
           flutter test --no-pub \
-            test/services/automix_service/automix_engine_test.dart \
+            test/services/automix_service/automix_contract_test.dart \
+            test/services/automix_service/automix_analysis_map_test.dart \
+            test/services/automix_service/automix_scoring_test.dart \
+            test/services/automix_service/automix_plan_set_test.dart \
+            test/services/automix_service/automix_merge_chord_test.dart \
+            test/services/automix_service/automix_cue_test.dart \
+            test/services/automix_service/automix_queue_test.dart \
             test/services/automix_service/automix_cache_test.dart \
             test/services/automix_service/automix_plan_signature_test.dart
 
