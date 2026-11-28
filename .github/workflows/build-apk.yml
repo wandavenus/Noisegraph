@@ -282,5 +282,9 @@ jobs:
               continue
             fi
             echo "Delete draft $tag"
-            gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
+            # No --cleanup-tag: deleting a release already removes its tag
+            # (proven in the 2026-11-29 manual purge and build #424), and the
+            # extra ref delete 422s ("Reference does not exist"), which under
+            # set -e failed build #424 AFTER its APK was safely uploaded.
+            gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes
           done
