@@ -1,9 +1,9 @@
 {
-  "version": "1.5.233",
-  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/build-44923378377/Noisegraph-361-arm64-v8a.apk",
-  "sizeBytes": 25261769,
-  "sha256": "0cfe142f851573d7996330d050b4eb16fd3fa3f1e1554d2aba955bd381728b45",
-  "notesId": "Automated release build for Noisegraph.\n\nSource revision: 63876fb96aad86eb90cc80823e85ac0b4b8d0050",
-  "notesEn": "Automated release build for Noisegraph.\n\nSource revision: 63876fb96aad86eb90cc80823e85ac0b4b8d0050",
-  "publishedAt": "2026-11-21"
+  "version": "1.5.326",
+  "apkUrl": "https://github.com/wandavenus/Noisegraph/releases/download/build-46187028080/Noisegraph-424-arm64-v8a.apk",
+  "sizeBytes": 25210981,
+  "sha256": "0311abf8cb5cc3c24e96b96ea1bc490827dec6ba5e8ba79384e2051809e94514",
+  "notesId": "Automated release build for Noisegraph.\n\nSource revision: ff77f1d4f115f9e59163b96c959ac0f33af05f58",
+  "notesEn": "Automated release build for Noisegraph.\n\nSource revision: ff77f1d4f115f9e59163b96c959ac0f33af05f58",
+  "publishedAt": "2026-11-28"
 }
