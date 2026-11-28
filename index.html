@@ -129,6 +129,9 @@ h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -.02em; line-
 .release-content code { font-family: var(--mono); font-size: 12px; line-height: 1.8; color: var(--ink) }
 .release-content code span { color: var(--muted) }
 .release-content .button { flex-shrink: 0 }
+.release-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 10px 16px; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 11.5px; color: var(--muted) }
+.release-meta code { color: var(--ink); word-break: break-all }
+.release-meta[hidden] { display: none }
 /* Sections */
 .section { padding: 30px 0 6px }
 .section-kicker { font-family: var(--mono); font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 8px }
@@ -226,6 +229,8 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
         <div class="release-box" aria-label="Latest APK download information">
           <div class="release-label">Android APK · GitHub Releases · ARM64</div>
           <div class="release-content"><code><span>$</span> Download the latest available Noisegraph build<br><span>→ Check release notes for changes and compatibility</span></code><a class="button button-primary" href="https://github.com/wandavenus/Noisegraph/releases/latest" target="_blank" rel="noreferrer">View releases ↗</a>
+          </div>
+          <div class="release-meta" id="release-meta" hidden><span>Latest version <code id="release-version"></code></span><span>SHA-256 <code id="release-sha"></code></span>
           </div>
         </div>
       </section>
@@ -355,6 +360,22 @@ html[data-theme="dark"] ::selection { background: #3d3d3d; color: #fff }
     </footer>
 
 <script src="sakuga-button.js"></script>
+<script>
+  // N02-F03: show the latest published version + APK SHA-256 from
+  // version.json (kept current by the publish-version-json workflow).
+  // Stays hidden if the manifest cannot be loaded.
+  (function () {
+    fetch("version.json", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (v) {
+        if (!v || !v.version || !v.sha256) return;
+        document.getElementById("release-version").textContent = "v" + v.version;
+        document.getElementById("release-sha").textContent = v.sha256;
+        document.getElementById("release-meta").hidden = false;
+      })
+      .catch(function () {});
+  })();
+</script>
 <script>
   (function () {
     var dl = document.getElementById("download-apk");
